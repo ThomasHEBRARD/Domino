@@ -1,7 +1,17 @@
 hello world
+
+<canvas id = "ctx" width="500" height="500" 
+    style="border:1px solid #000000;"></canvas>
+
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
-    /*On initialise la connection entre le client et le serveur */
+    /* Pour dessiner */
+    var ctx = document.getElementById("ctx").getContext("2d");
+    ctx.font = '30px Arial';
+
+    /* On initialise la connection entre le client et le serveur */
     var socket = io();
+
+    socket.emit('happy');
 </script>
