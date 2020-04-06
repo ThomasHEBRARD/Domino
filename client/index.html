@@ -1,7 +1,7 @@
+hello world
 <script src="/socket.io/socket.io.js"></script>
+
 <script>
- var socket = io.connect('http://localhost:8080'); // émission 'connection'
- socket.on('hello', function (data) { // réception 'hello'
- dropzone.texContent = 'le serveur me dit : ' + JSON.stringify(data);
- });
+    /*On initialise la connection entre le client et le serveur */
+    var socket = io();
 </script>
