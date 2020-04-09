@@ -31,12 +31,12 @@ var PLAYERS = {
 /* Fonction qui return true (ou false)
  si le password entré par le joueur est le bon*/
 var isValidPassword = function(data){
-    return PLAYERS[data.username] === data.password
+    return PLAYERS[data.username] === data.password;
 }
 
 /* return true ou false si le nom du player est déjà utilisé */
 var isUsernameTaken = function(data){
-    return PLAYERS[data.username]
+    return PLAYERS[data.username];
 }
 
 var addPlayer = function(data){
@@ -135,12 +135,13 @@ for (var i = 0; i <= 6; i++){
 var io = require('socket.io')(serv, {});
 
 io.sockets.on('connection', function(socket){
-
+    var player_name = 'None';
     /* Réception côté serveur de la connexion du client */
     socket.on('signIn', function(data){
         if (isValidPassword(data)){
             /* Création du joueur qui s'est connecté */
             var player = new Player(data.username, socket);
+            var player_name = player.name;
             socket.emit('signInResponse', {success:true});
         } else {
             socket.emit('signInResponse', {success:false});
@@ -171,11 +172,11 @@ io.sockets.on('connection', function(socket){
         delete SOCKET_LIST[socket.id];
     });
     
+    /* Messagerie instantanée */
     socket.on('sendMsgToServer', function(data){
-        var playerName = ("" + socket.id).slice(2,7);
         for (var i in SOCKET_LIST) {
-            SOCKET_LIST[i].emit('addToChat', playerName + ': ' + data);
-        } 
+            SOCKET_LIST[i].emit('addToChat', player_name + ': ' + data);
+        }
     });
 
     socket.emit('drawDeck');

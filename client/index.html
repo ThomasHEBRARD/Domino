@@ -89,7 +89,7 @@
         /* Si on a pas un preventDefault, en appuyant sur entrée, cela va
         refresh la page. */
         e.preventDefault();
-        socket.emit('sendMsgToServer', chatInput.value);
+        socket.emit('sendMsgToServer', chatInput.valu);
         chatInput.value = '';
     };
 
