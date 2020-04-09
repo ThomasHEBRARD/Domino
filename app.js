@@ -17,29 +17,50 @@ serv.listen(8000);
 
 console.log("Le server a démarré")
 
-/********************** Les classes ******************/
 
 /* Liste des sockets des joueurs */
 var SOCKET_LIST = {};
 var PLAYER_LIST = {};
 
+/* username:password de tous les joueurs qui ont SignUp */
+var PLAYERS = {
+    "thomas": "coucou",
+    "edouard": "heho",
+}
+
+/* Fonction qui return true (ou false)
+ si le password entré par le joueur est le bon*/
+var isValidPassword = function(data){
+    return PLAYERS[data.username] === data.password
+}
+
+/* return true ou false si le nom du player est déjà utilisé */
+var isUsernameTaken = function(data){
+    return PLAYERS[data.username]
+}
+
+var addPlayer = function(data){
+    PLAYERS[data.username] = data.password;
+}
+/********************** Les classes ******************/
+
 /* Classe qui gère les joueurs */
 class Player {
-    constructor(id, socket) {
-        this.id = id;
+    constructor(socket, name) {
+        this.name = name;
         this.number_dominos = 7;
         this.socket = socket;
     }
     /* Méthode qui est lancée quand un joueur se connecte */
     onConnect(socket) {
-        var player = new Player(socket.id);
+        PLAYER_LIST[name] = name;
     };
 
     /* Méthode lancée quand un joueur se déconnecte */
     onDisconnect(socket) {
         /* On l'enlève de la liste des joueurs */
         delete SOCKET_LIST[socket.id];
-        delete PLAYER_LIST[this.id];
+        delete PLAYER_LIST[this.name];
     };
 
     /* Méthode qui met à jour les paramètres du joueur */
@@ -111,10 +132,28 @@ for (var i = 0; i <= 6; i++){
 
 /* Dès qu'il y a une connection, la function ci-dessous est appelée */
 var io = require('socket.io')(serv, {});
+
 io.sockets.on('connection', function(socket){
-    /* Création du joueur qui s'est connecté */
-    var player = new Player(Math.random(), socket);
-    PLAYER_LIST[player.id] = player.id;
+
+    /* Réception côté serveur de la connexion du client */
+    socket.on('signIn', function(data){
+        if (isValidPassword(data)){
+            /* Création du joueur qui s'est connecté */
+            var player = new Player(data.username, socket);
+            socket.emit('signInResponse', {success:true});
+        } else {
+            socket.emit('signInResponse', {success:false});
+        }
+    });
+
+    socket.on('signUp', function(data){
+        if (isUsernameTaken(data)){
+            socket.emit('signUpResponse', {success:false});
+        } else {
+            addPlayer(data);
+            socket.emit('signUpResponse', {success:true});
+        }
+    });
 
     /* On associe un id unique à chaque joueur */
     socket.id = Math.random();
@@ -123,14 +162,12 @@ io.sockets.on('connection', function(socket){
     représente un joueur avec des attributs (ici id) */
     SOCKET_LIST[socket.id] = socket;
 
-    player.onConnect(socket);
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */
     /* On utilise son identifiant, socket.id pour le reconnaitre */
     /* Inutile de mettre un emit côté client, il est programmé automatiquement */
     socket.on('disconnect', function(){
         delete SOCKET_LIST[socket.id];
-        player.onDisconnect(socket);
     });
     
     socket.on('sendMsgToServer', function(data){

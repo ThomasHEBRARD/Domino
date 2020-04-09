@@ -1,33 +1,77 @@
 <!-- MADE BY THOMAS HEBRARD
     AND    EDOUARD LAJOUANIE
 -->
-
-<div>
-    <canvas id = "deck" width="500" height="200"
-    style="border:1px solid blue">
-</canvas>
-    <canvas id = "ctxx" width="500" height="200" 
-    style="border:1px solid #000000;"></canvas>
+<div id="sign">
+    Username: <input id="sign-username" type="text"></input><br>
+    Password: <input id="sign-password" type="password"></input>
+    <button id="sign-signIn">Sign In</button>
+    <button id="sign-signUp">Sign Up</button>
 </div>
-<canvas id = "ctx" width="1000" height="500" 
-    style="border:1px solid #000000;"></canvas>
+<div id="game" style="display:none;">
 
-<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
-    <div>Hello!</div>
+    <div>
+        <canvas id = "deck" width="500" height="200"
+        style="border:1px solid blue">
+    </canvas>
+        <canvas id = "ctxx" width="500" height="200" 
+        style="border:1px solid #000000;"></canvas>
+    </div>
+    <canvas id = "ctx" width="1000" height="500" 
+        style="border:1px solid #000000;"></canvas>
+
+    <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+        <div>Hello!</div>
+    </div>
+
+    <form id="chat-form">
+        <input id="chat-input" type="text" style="width:500px"></input>
+    </form>
+
 </div>
-
-<form id="chat-form">
-    <input id="chat-input" type="text" style="width:500px"></input>
-</form>
-
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
+    /* On initialise la connection entre le client et le serveur */
+    var socket = io();
+
+    /* Sign */
+    var sign = document.getElementById('sign');
+    var sign_username = document.getElementById('sign-username');
+    var sign_password = document.getElementById('sign-password');
+    var sign_signIn = document.getElementById('sign-signIn');
+    var sign_signUp = document.getElementById('sign-signUp');
+
+    sign_signIn.onclick = function(){
+        socket.emit('signIn', {username:sign_username.value, password:sign_password.value});
+    }
+
+    sign_signUp.onclick = function(){
+        socket.emit('signUp', {username:sign_username.value, password:sign_password.value})
+    }
+
+    socket.on('signInResponse', function(data){
+        if(data.success){
+            sign.style.display = 'none';
+            game.style.display = 'inline-block';
+        } else {
+            alert('Mot de passe ou username incorrect');
+        }
+    });
+
+    socket.on('signUpResponse', function(data){
+        if (data.success){
+            alert('Enregistrement correct');
+        } else {
+            alert('Enregistrement incorrect');
+        }
+    });
+    
     /* Le chat instantané */
     var chatText = document.getElementById('chat-text');
     var chatInput = document.getElementById('chat-input');
     var chatForm = document.getElementById('chat-form');
 
+    /* Le Jeu */
     /* Pour dessiner le terrain de jeu*/
     var ctx = document.getElementById("ctx").getContext("2d");
     ctx.font = '30px Arial';
@@ -35,9 +79,6 @@
     /* Pour dessiner le deck de chaque joueur */
     var deck = document.getElementById("deck").getContext("2d");
     deck.font = '30px Arial';
-
-    /* On initialise la connection entre le client et le serveur */
-    var socket = io();
 
     socket.on('addToChat', function(data){
         chatText.innerHTML += '<div>' + data + '</div>';
