@@ -141,7 +141,7 @@ io.sockets.on('connection', function(socket){
         if (isValidPassword(data)){
             /* Création du joueur qui s'est connecté */
             var player = new Player(data.username, socket);
-            var player_name = player.name;
+            player_name = data.username;
             socket.emit('signInResponse', {success:true});
         } else {
             socket.emit('signInResponse', {success:false});

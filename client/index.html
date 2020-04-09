@@ -1,33 +1,40 @@
 <!-- MADE BY THOMAS HEBRARD
     AND    EDOUARD LAJOUANIE
 -->
-<div id="sign">
-    Username: <input id="sign-username" type="text"></input><br>
-    Password: <input id="sign-password" type="password"></input>
-    <button id="sign-signIn">Sign In</button>
-    <button id="sign-signUp">Sign Up</button>
-</div>
-
-<div id="game" style="display:none;">
-
-    <div>
-        <canvas id = "deck" width="500" height="200"
-        style="border:1px solid blue">
-    </canvas>
-        <canvas id = "ctxx" width="500" height="200" 
-        style="border:1px solid #000000;"></canvas>
-    </div>
-    <canvas id = "ctx" width="1000" height="500" 
-        style="border:1px solid #000000;"></canvas>
-
-    <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
-        <div>Hello!</div>
-    </div>
-
-    <form id="chat-form">
-        <input id="chat-input" type="text" style="width:500px"></input>
-    </form>
-</div>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Domino</title>
+        <link rel="stylesheet" type="text/css" href="indexcss.css">
+    </head>
+    <body>
+        <div id="sign">
+            Username: <input id="sign-username" type="text"></input><br>
+            Password: <input id="sign-password" type="password"></input>
+            <button id="sign-signIn">Sign In</button>
+            <button id="sign-signUp">Sign Up</button>
+        </div>
+        
+        <div id="game" style="display:none;">
+            <div>
+                <canvas id = "deck" width="500" height="200"
+                style="border:1px solid blue"></canvas>
+                <canvas id = "ctxx" width="500" height="200" 
+                style="border:1px solid red;"></canvas>
+            </div>
+            <canvas id = "ctx" width="1000" height="500" 
+                style="border:1px solid #000000;"></canvas>
+        
+        <div id="chat-text" style="width:100px;height:100px;overflow-y:scroll">
+            <div>Hello!</div>
+        </div>
+    
+        <form id="chat-form">
+            <input id="chat-input" type="text" style="width:500px"></input>
+        </form>
+        </div>
+    </body>
+</html>
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -89,7 +96,7 @@
         /* Si on a pas un preventDefault, en appuyant sur entrée, cela va
         refresh la page. */
         e.preventDefault();
-        socket.emit('sendMsgToServer', chatInput.valu);
+        socket.emit('sendMsgToServer', chatInput.value);
         chatInput.value = '';
     };
 
