@@ -22,19 +22,15 @@ style="border:1px solid blue"></canvas>
     var socket = io();
 
 
-<<<<<<< HEAD
+
     socket.on('drawDeck', function(){
-=======
-    socket.on('drawDeck', function(a){
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
         var x = 10;
         var y = 10;
 
         for (var i = 0; i < 7; i++){
             deck.strokeRect(x, y, 50, 90, "blue");
             x += 65;
-        }
-        
+        } 
     });
 
     socket.on('flip', function(pack){

@@ -17,17 +17,10 @@ serv.listen(8000);
 
 console.log("Le server a démarré")
 
-<<<<<<< HEAD
-
 /********************** Les classes ******************/
 
-=======
-/********************** Les classes ******************/
-
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
 /* Liste des sockets des joueurs */
 var SOCKET_LIST = {};
-
 
 /* Classe qui gère les joueurs */
 var Player = function(id){
@@ -43,10 +36,7 @@ Player.list = {};
 /* Fonction qui est lancée quand un joueur se connecte */
 Player.onConnect = function(socket){
     var player = Player(socket.id);
-<<<<<<< HEAD
-    $
-=======
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
+
     /* On ajoute un listener pour le clic */
     socket.on('clic', function(date){
 
@@ -72,7 +62,7 @@ Player.update = function(){
     return pack;
 }
 
-<<<<<<< HEAD
+
 var Domino = function(id, numbre_1, numbre_2){
     var self = {
         id:id,
@@ -82,27 +72,6 @@ var Domino = function(id, numbre_1, numbre_2){
         state:"North"
     };
 
-    /* Création des dominos */
-    const allDominos = {};
-    k = 0
-    for (var i = 0; i <= 6; i++){
-        for (var j = i; j <= 6; i++){}
-            allDominos[k] = Domino(k, i, j)
-            k ++;
-        }
-    }
-
-=======
-var Domino = function(id, number_1, number_2){
-    var self = {
-        id:id,
-        number_1:number_1,
-        number_2:number_2,
-        number_used:None,
-        state:"North"
-    };
-
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
     self.flip = function(){
         /* On initialise ce que l'on va envoyer en data pour le socket vers le client */
         var pack = [];
@@ -118,13 +87,9 @@ var Domino = function(id, number_1, number_2){
             self.state = "North";
         }
 
-<<<<<<< HEAD
+
         pack.push({num1:self.numbre_1,
             num2:self.numbre_2,
-=======
-        pack.push({num1:self.number_1,
-            num2:self.number_2,
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
             state:self.state
         });
         /* On envoit au client pour changer le canvas */
@@ -138,22 +103,22 @@ var Domino = function(id, number_1, number_2){
             return(false);
         }
     }
-<<<<<<< HEAD
-=======
-    
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
 }
 
+/* Création des dominos */
+const allDominos = {};
+k = 0
+for (var i = 0; i <= 6; i++){
+    for (var j = i; j <= 6; i++){
+        allDominos[k] = Domino(k, i, j)
+        k ++;
+    }
+}
 /*************** Les fonctions **************/
 
 function getRandomDominos(players, allDominos){
 
 }
-
-
-
-
-
 /************************ Lancement du serveur ***************************/
 
 /* Dès qu'il y a une connection, la function ci-dessous est appelée */
@@ -163,17 +128,10 @@ io.sockets.on('connection', function(socket){
     /* On associe un id unique à chaque joueur */
     socket.id = Math.random();
 
-<<<<<<< HEAD
     /* On ajoute à la liste des joueurs l'objet socket qui
     représente un joueur avec des attributs (ici id) */
     SOCKET_LIST[socket.id] = socket;
-    
-=======
-    /* On ajoute à la liste des joeuurs l'objet socket qui
-    représente un joueur avec des attributs (ici id) */
-    SOCKET_LIST[socket.id] = socket;
 
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
     Player.onConnect(socket);
 
     /* On écoute à un émit coté client :*/
@@ -185,12 +143,9 @@ io.sockets.on('connection', function(socket){
         Player.onDisconnect(socket);
     });
 
-<<<<<<< HEAD
     socket.on('clic', function(position){
     })
 
-=======
->>>>>>> 817a1cbe3d72660dc705c4d039d9697d72efbd30
     socket.emit('drawDeck');
 });
 
