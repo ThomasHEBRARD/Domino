@@ -6,6 +6,8 @@
     Password: <input id="sign-password" type="password"></input>
     <button id="sign-signIn">Sign In</button>
     <button id="sign-signUp">Sign Up</button>
+<<<<<<< HEAD
+=======
 </div>
 
 <div id="game" style="display:none;">
@@ -19,6 +21,27 @@
 
     <canvas id = "ctx" width="1000" height="500" 
         style="border:1px solid #000000;"></canvas>
+<<<<<<< HEAD
+=======
+<div>
+    <canvas id = "deck" width="500" height="200"
+    style="border:1px solid blue">
+</canvas>
+    <canvas id = "ctxx" width="500" height="200" 
+    style="border:1px solid #000000;"></canvas>
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
+</div>
+<div id="game" style="display:none;">
+
+    <div>
+        <canvas id = "deck" width="500" height="200"
+        style="border:1px solid blue">
+    </canvas>
+        <canvas id = "ctxx" width="500" height="200" 
+        style="border:1px solid #000000;"></canvas>
+    </div>
+    <canvas id = "ctx" width="1000" height="500" 
+        style="border:1px solid #000000;"></canvas>
 
     <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
         <div>Hello!</div>
@@ -27,6 +50,22 @@
     <form id="chat-form">
         <input id="chat-input" type="text" style="width:500px"></input>
     </form>
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
+
+<<<<<<< HEAD
+=======
+    <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+        <div>Hello!</div>
+    </div>
+
+    <form id="chat-form">
+        <input id="chat-input" type="text" style="width:500px"></input>
+    </form>
+<<<<<<< HEAD
+=======
+
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -38,17 +77,34 @@
     /* Sign */
     var sign = document.getElementById('sign');
     var sign_username = document.getElementById('sign-username');
+<<<<<<< HEAD
     var sign_password = document.getElementById('sign-password');
+=======
+<<<<<<< HEAD
+    var sign_password = document.getElementById('sign-password');
+=======
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
     var sign_password = document.getElementById('sign_password');
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
     var sign_signIn = document.getElementById('sign-signIn');
     var sign_signUp = document.getElementById('sign-signUp');
 
     sign_signIn.onclick = function(){
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
         socket.emit('signIn', {username:sign_username.value, password:sign_password.value});
     }
 
     sign_signUp.onclick = function(){
         socket.emit('signUp', {username:sign_username.value, password:sign_password.value})
+<<<<<<< HEAD
+=======
+=======
+        socket.emit('singIn', {username:sign_username.value, password:sign_password.value});
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
     }
 
     socket.on('signInResponse', function(data){
@@ -56,6 +112,10 @@
             sign.style.display = 'none';
             game.style.display = 'inline-block';
         } else {
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
             alert('Mot de passe ou username incorrect');
         }
     });
@@ -65,9 +125,20 @@
             alert('Enregistrement correct');
         } else {
             alert('Enregistrement incorrect');
+<<<<<<< HEAD
         }
     });
 
+=======
+        }
+    });
+    
+=======
+            alert("Connexion erronée");
+        }
+    });
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
     /* Le chat instantané */
     var chatText = document.getElementById('chat-text');
     var chatInput = document.getElementById('chat-input');
@@ -104,4 +175,13 @@
         } 
     });
     
+<<<<<<< HEAD
 </script>
+=======
+<<<<<<< HEAD
+</script>
+=======
+</script>
+</script>
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
+>>>>>>> e07e1b3ee5759a33515ea590af9b20051743937e
