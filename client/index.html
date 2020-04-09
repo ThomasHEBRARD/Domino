@@ -6,6 +6,27 @@
     Password: <input id="sign-password" type="password"></input>
     <button id="sign-signIn">Sign In</button>
     <button id="sign-signUp">Sign Up</button>
+<<<<<<< HEAD
+=======
+</div>
+<div id="game" style="display:none;">
+
+    <div>
+        <canvas id = "deck" width="500" height="200"
+        style="border:1px solid blue">
+    </canvas>
+        <canvas id = "ctxx" width="500" height="200" 
+        style="border:1px solid #000000;"></canvas>
+    </div>
+    <canvas id = "ctx" width="1000" height="500" 
+        style="border:1px solid #000000;"></canvas>
+<div>
+    <canvas id = "deck" width="500" height="200"
+    style="border:1px solid blue">
+</canvas>
+    <canvas id = "ctxx" width="500" height="200" 
+    style="border:1px solid #000000;"></canvas>
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
 </div>
 <div id="game" style="display:none;">
 
@@ -27,6 +48,17 @@
         <input id="chat-input" type="text" style="width:500px"></input>
     </form>
 
+<<<<<<< HEAD
+=======
+    <div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+        <div>Hello!</div>
+    </div>
+
+    <form id="chat-form">
+        <input id="chat-input" type="text" style="width:500px"></input>
+    </form>
+
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
 </div>
 <script src="/socket.io/socket.io.js"></script>
 
@@ -37,16 +69,24 @@
     /* Sign */
     var sign = document.getElementById('sign');
     var sign_username = document.getElementById('sign-username');
+<<<<<<< HEAD
     var sign_password = document.getElementById('sign-password');
+=======
+    var sign_password = document.getElementById('sign_password');
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
     var sign_signIn = document.getElementById('sign-signIn');
     var sign_signUp = document.getElementById('sign-signUp');
 
     sign_signIn.onclick = function(){
+<<<<<<< HEAD
         socket.emit('signIn', {username:sign_username.value, password:sign_password.value});
     }
 
     sign_signUp.onclick = function(){
         socket.emit('signUp', {username:sign_username.value, password:sign_password.value})
+=======
+        socket.emit('singIn', {username:sign_username.value, password:sign_password.value});
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
     }
 
     socket.on('signInResponse', function(data){
@@ -54,6 +94,7 @@
             sign.style.display = 'none';
             game.style.display = 'inline-block';
         } else {
+<<<<<<< HEAD
             alert('Mot de passe ou username incorrect');
         }
     });
@@ -66,6 +107,11 @@
         }
     });
     
+=======
+            alert("Connexion erronée");
+        }
+    });
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
     /* Le chat instantané */
     var chatText = document.getElementById('chat-text');
     var chatInput = document.getElementById('chat-input');
@@ -102,4 +148,9 @@
         } 
     });
     
+<<<<<<< HEAD
 </script>
+=======
+</script>
+</script>
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66

@@ -53,7 +53,12 @@ class Player {
     }
     /* Méthode qui est lancée quand un joueur se connecte */
     onConnect(socket) {
+<<<<<<< HEAD
         PLAYER_LIST[name] = name;
+=======
+        var player = new Player(socket.id);
+        console.log('salutsalut');
+>>>>>>> df0a8e5edc8b7844e7ec1ba6baf8d4818032bf66
     };
 
     /* Méthode lancée quand un joueur se déconnecte */
