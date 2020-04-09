@@ -2,14 +2,32 @@
     AND    EDOUARD LAJOUANIE
 -->
 
-<canvas id = "ctx" width="500" height="500" 
+<div>
+    <canvas id = "deck" width="500" height="200"
+    style="border:1px solid blue">
+</canvas>
+    <canvas id = "ctxx" width="500" height="200" 
     style="border:1px solid #000000;"></canvas>
-<canvas id = "deck" width="460" height="200"
-style="border:1px solid blue"></canvas>
+</div>
+<canvas id = "ctx" width="1000" height="500" 
+    style="border:1px solid #000000;"></canvas>
+
+<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+    <div>Hello!</div>
+</div>
+
+<form id="chat-form">
+    <input id="chat-input" type="text" style="width:500px"></input>
+</form>
 
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
+    /* Le chat instantané */
+    var chatText = document.getElementById('chat-text');
+    var chatInput = document.getElementById('chat-input');
+    var chatForm = document.getElementById('chat-form');
+
     /* Pour dessiner le terrain de jeu*/
     var ctx = document.getElementById("ctx").getContext("2d");
     ctx.font = '30px Arial';
@@ -21,7 +39,17 @@ style="border:1px solid blue"></canvas>
     /* On initialise la connection entre le client et le serveur */
     var socket = io();
 
+    socket.on('addToChat', function(data){
+        chatText.innerHTML += '<div>' + data + '</div>';
+    });
 
+    chatForm.onsubmit = function(e){
+        /* Si on a pas un preventDefault, en appuyant sur entrée, cela va
+        refresh la page. */
+        e.preventDefault();
+        socket.emit('sendMsgToServer', chatInput.value);
+        chatInput.value = '';
+    };
 
     socket.on('drawDeck', function(){
         var x = 10;
@@ -32,9 +60,5 @@ style="border:1px solid blue"></canvas>
             x += 65;
         } 
     });
-
-    socket.on('flip', function(pack){
-
-    });
-
+    
 </script>

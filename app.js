@@ -21,136 +21,124 @@ console.log("Le server a démarré")
 
 /* Liste des sockets des joueurs */
 var SOCKET_LIST = {};
+var PLAYER_LIST = {};
 
 /* Classe qui gère les joueurs */
-var Player = function(id){
-    var self = {
-        id:id,
-        number_of_dominos:7
+class Player {
+    constructor(id, socket) {
+        this.id = id;
+        this.number_dominos = 7;
+        this.socket = socket;
     }
-    return self;
-}
-/* Liste qui contiendra les joueurs */
-Player.list = {};
-
-/* Fonction qui est lancée quand un joueur se connecte */
-Player.onConnect = function(socket){
-    var player = Player(socket.id);
-
-    /* On ajoute un listener pour le clic */
-    socket.on('clic', function(date){
-
-    });
-}
-
-/* Fonction lancée quand un joueur se déconnecte */
-Player.onDisconnect = function(socket){
-    /* On l'enlève de la liste des joueurs */
-    delete Player.list[socket.id];
-}
-
-/* Fonction qui met à jour les paramètres du joueur */
-Player.update = function(){
-    var pack = [];
-    for(var p in Player.list){
-        var player = Player.list[i];
-        player.update();
-        pack.push({
-
-        });
-    }
-    return pack;
-}
-
-
-var Domino = function(id, numbre_1, numbre_2){
-    var self = {
-        id:id,
-        numbre_1:numbre_1,
-        numbre_2:numbre_2,
-        numbre_used:None,
-        state:"North"
+    /* Méthode qui est lancée quand un joueur se connecte */
+    onConnect(socket) {
+        var player = new Player(socket.id);
     };
 
-    self.flip = function(){
+    /* Méthode lancée quand un joueur se déconnecte */
+    onDisconnect(socket) {
+        /* On l'enlève de la liste des joueurs */
+        delete SOCKET_LIST[socket.id];
+        delete PLAYER_LIST[this.id];
+    };
+
+    /* Méthode qui met à jour les paramètres du joueur */
+    update() {
+        var pack = [];
+        return pack;
+    };
+}
+
+class Domino {
+    constructor(id, numbre_1, numbre_2) {
+        this.id = id;
+        this.numbre_1 = numbre_1;
+        this.numbre_2 = numbre_2;
+        this.numbre_used = numbre_1;
+        this.state = "North";
+    }
+
+    flip() {
         /* On initialise ce que l'on va envoyer en data pour le socket vers le client */
         var pack = [];
-
         /* On garde une trace de l'orientation du domino */
-        if (self.state == "North"){
-            self.state == "East";
-        } else if (self.state == "East"){
-            self.state = "South";
-        } else if (self.state == "South"){
-            self.state = "West";
-        } else if (self.state == "West"){
-            self.state = "North";
+        if (this.state == "North") {
+            this.state == "East";
         }
-
-
-        pack.push({num1:self.numbre_1,
-            num2:self.numbre_2,
-            state:self.state
+        else if (this.state == "East") {
+            this.state = "South";
+        }
+        else if (this.state == "South") {
+            this.state = "West";
+        }
+        else if (this.state == "West") {
+            this.state = "North";
+        }
+        pack.push({
+        num1: this.numbre_1,
+            num2: this.numbre_2,
+            state: this.state
         });
+
         /* On envoit au client pour changer le canvas */
         socket.emit('flip', pack);
-    }
+    };
 
-    self.correspondance = function(Domino){
-        if (self.nu == nbr2){
-            return(true);
-        } else {
-            return(false);
+    /*correspondance(Domino) {
+        if (this.numbre_used == nbr2) {
+            return (true);
         }
-    }
+        else {
+            return (false);
+        }
+    };*/
 }
+
 
 /* Création des dominos */
 const allDominos = {};
-k = 0
+k = 0;
 for (var i = 0; i <= 6; i++){
-    for (var j = i; j <= 6; i++){
-        allDominos[k] = Domino(k, i, j)
-        k ++;
+    for (var j = i; j <= 6; j++){
+        allDominos[k] = new Domino(k, i, j)
+        k += 1;
     }
 }
+
 /*************** Les fonctions **************/
 
-function getRandomDominos(players, allDominos){
-
-}
 /************************ Lancement du serveur ***************************/
 
 /* Dès qu'il y a une connection, la function ci-dessous est appelée */
 var io = require('socket.io')(serv, {});
 io.sockets.on('connection', function(socket){
+    /* Création du joueur qui s'est connecté */
+    var player = new Player(Math.random(), socket);
+    PLAYER_LIST[player.id] = player.id;
 
     /* On associe un id unique à chaque joueur */
     socket.id = Math.random();
-
+    
     /* On ajoute à la liste des joueurs l'objet socket qui
     représente un joueur avec des attributs (ici id) */
     SOCKET_LIST[socket.id] = socket;
 
-    Player.onConnect(socket);
-
+    player.onConnect(socket);
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */
     /* On utilise son identifiant, socket.id pour le reconnaitre */
     /* Inutile de mettre un emit côté client, il est programmé automatiquement */
     socket.on('disconnect', function(){
         delete SOCKET_LIST[socket.id];
-        Player.onDisconnect(socket);
+        player.onDisconnect(socket);
     });
-
-    socket.on('clic', function(position){
-    })
+    
+    socket.on('sendMsgToServer', function(data){
+        var playerName = ("" + socket.id).slice(2,7);
+        for (var i in SOCKET_LIST) {
+            SOCKET_LIST[i].emit('addToChat', playerName + ': ' + data);
+        } 
+    });
 
     socket.emit('drawDeck');
 });
-
-/* Cette fonction sera appellé toutes les 40ms */
-/* Elle va nous permettre de voir qui a gagné*/
-setInterval(function(){
-    
-}, 1000/25);
