@@ -106,10 +106,17 @@
     var c1 = document.getElementById("ctx");
     var pinceau = c1.getContext("2d");
     c1.font = '30px Arial';
+<<<<<<< HEAD
 
     /* Tracé de la grille */
     var ecart = 45; 
 
+=======
+
+    /* Tracé de la grille */
+    var ecart = 45; 
+
+>>>>>>> 76384766d7975714da206debca8af4fa06498501
     /* Lignes */
     for(var h = ecart ; h < c1.height ; h += ecart) {
         pinceau.moveTo(0, h); //déplacer le pinceau à (x,y) sans tracer
@@ -129,6 +136,7 @@
 
     /********* Dessin des dominos ************/
 
+<<<<<<< HEAD
     /* Dessine un Domino */
     var drawDomino = function(data){
         deck.strokeRect(data.x, data.y, 45, 45, data.color);
@@ -139,11 +147,20 @@
     var drawDeck = function(data){
         var color = data.color;
         var data = data.deck;
+=======
+    var drawDomino = function(data){
+        deck.strokeRect(data.x, data.y, 45, 45, "blue");
+        deck.fillText(data.numbre.toString(), data.x+15, data.y+30);
+    }
+
+    socket.on('drawDeck', function(data){
+>>>>>>> 76384766d7975714da206debca8af4fa06498501
         /* Définition des bords */
         var a = 10;
         var b = 10;
         /* data est ici la variable deck, un array des 7 Dominos du Deck */
         for (var i = 0; i < 7; i++){
+<<<<<<< HEAD
             drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b, color: color});
             drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
         }
@@ -159,5 +176,10 @@
         for (var i = 0; i < data.length; i++){
             drawDeck({deck: data, color: "red"});
         }
+=======
+            drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b});
+            drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
+        }
+>>>>>>> 76384766d7975714da206debca8af4fa06498501
     });
 </script>
