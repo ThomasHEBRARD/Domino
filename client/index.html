@@ -146,13 +146,13 @@
         data.x += 10;
         if (10 <= data.y <= 100){
             var numero = Math.floor(data.x/65);
-            socket.emit('QuelDomino', {numero});
+            socket.emit('QuelDomino', {numero: numero});
         }
     }
     /* Dessine un Domino */
     var drawDomino = function(data){
-        deck.strokeRect(data.x, data.y, 45, 45, data.color);
-        deck.fillText(data.numbre.toString(), data.x + 15, data.y + 30);
+        deck_context.strokeRect(data.x, data.y, 45, 45, data.color);
+        deck_context.fillText(data.numbre.toString(), data.x + 15, data.y + 30);
     }
 
     /* Dessine le Deck du Joueur */
@@ -170,6 +170,10 @@
         }
     };
     
+    var drawDominoGame = function(data){
+        /* Dessiner le Domino, et voir pour son orientation */
+    }
+
     /* Appelle la fonction qui dessine le deck du joueur */
     socket.on('drawDeck', function(data){
         drawDeck({deck: data, color: "blue"});
@@ -184,9 +188,8 @@
     });
 
     socket.on('LeDominoChoisi', function(data){
+        /* A CHANGER */
+        drawDominoGame(data);
     })
 
-    socket.on('drawDominoGame', function(data){
-
-    })
 </script>

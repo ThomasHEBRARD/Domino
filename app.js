@@ -20,8 +20,11 @@ console.log("Le server a démarré")
 /***************** Déclaration de constantes *********************/
 
 /* Liste des sockets des joueurs */
-var SOCKET_LIST = {};
+var SOCKET_LIST = [];
 var PLAYER_LIST = [];
+
+/* Garde une trace des dominos joués */
+var DOMINOS_JOUES = [];
 
 /* Base de donnée username:password de tous les joueurs qui ont SignUp */
 var PLAYERS = {
@@ -255,7 +258,8 @@ io.sockets.on('connection', function(socket){
         
                     /* On ajoute à la liste des joueurs l'objet socket qui
                     représente un joueur avec des attributs (ici id) */
-                    SOCKET_LIST[socket.id] = socket;
+                    SOCKET_LIST.push(socket.id);
+                    
                     socket.emit('signInResponse', {success:true});
                     socket.emit('drawDeck', deck);
                 } else {
@@ -269,7 +273,7 @@ io.sockets.on('connection', function(socket){
         }
     });
 
-    console.log(SOCKET_LIST);
+    
 
     socket.on('signUp', function(data){
         if (isUsernameTaken(data)){
@@ -304,7 +308,16 @@ io.sockets.on('connection', function(socket){
 
     socket.on('QuelDomino', function(data){
         /* data est le numero du domino du deck du joueur */
-        /* Remettre les Dominos Jouables en Ijouable */
-        /*socket.emit('LeDominoChoisi', {domino: deck[data.numero]})*/
+
+        /* Savoir quel joueur a cliqué */
+        var numero_joueur = SOCKET_LIST.indexOf(socket.id);
+        var le_domino = PLAYER_LIST[numero_joueur][data.numero];
+        le_domino.state = "Entourable";
+
+        /* Remettre les Dominos Jouables en Injouable */
+        DOMINOS_JOUES[-1].state = "Posé";
+        DOMINOS_JOUES.push(le_domino);
+        /* Il faut maintenant le dessiner */
+        socket.emit('LeDominoChoisi', {domino: deck[data.numero]})
     });
 });
