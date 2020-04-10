@@ -29,6 +29,8 @@ var PLAYERS = {
 }
 /* Variable globale qui contient tous les dominos possibles */
 const allDominos = [];
+/* Variable qui contient les chiffres Jouables */
+var ChiffresJouables = [];
 
 /********************** Les classes ******************/
 
@@ -65,7 +67,17 @@ class Domino {
         this.numbre_1 = numbre_1;
         this.numbre_2 = numbre_2;
         this.numbre_used = numbre_1;
-        this.state = "North";
+        /* Plusieurs états pour savoir quel domino peut-être joué 
+        -> Jouable : C'est à dire qu'il fait parti des Dominos qui peuvent être possiblement 
+        posés au moment où c'est au joueur de jouer.
+        -> Injouable : Le Domino est encore dans le Deck du joueur,
+        Mais il ne peut pas être joué au vu des Dominos déjas posés.
+        -> Posé : Le Domino est posé sur le terrain de jeu,
+        il ne peut pas être modifié.
+        --> Entourable : Lorsqu'un Domino est posé sur le terrain, il est "entourable",
+        c'est à dire que le prochain joueur peut poser un de ses Dominos à côté.
+        /* Par défaut, les Dominos sont tous injouables */
+        this.state = "Injouable";
     }
 
     flip() {
@@ -105,6 +117,22 @@ class Domino {
 }
 
 /*************** Les fonctions **************/
+
+var LesDominosDuDeckJouables = function(data){
+    var DECK = data.deck;
+    for (var i = 0; i < DECK.length; i++){
+        if (DECK[i].numbre_1 == data.possibility || DECK[i].numbre_2 == data.possibility){
+            DECK[i].state = "Jouable";
+        }
+    }
+}
+
+var AnalyserLesOptions = function(deck){
+    for (var i = 0; i < ChiffresJouables.length; i++){
+        LesDominosDuDeckJouables({possibility: ChiffresJouables[i], deck: deck})
+    }
+    socket.emit('dessinerEnRouge', deck);
+}
 
 /* Création des dominos */
 k = 0;
