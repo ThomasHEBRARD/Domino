@@ -27,21 +27,11 @@ var PLAYERS = {
     "thomas": "coucou",
     "edouard": "heho",
 }
+/* Variable globale qui contient tous les dominos possibles */
+const allDominos = [];
+/* Variable qui contient les chiffres Jouables */
+var ChiffresJouables = [];
 
-/* Fonction qui return true (ou false)
- si le password entré par le joueur est le bon*/
-var isValidPassword = function(data){
-    return PLAYERS[data.username] === data.password;
-}
-
-/* return true ou false si le nom du player est déjà utilisé */
-var isUsernameTaken = function(data){
-    return PLAYERS[data.username];
-}
-
-var addPlayer = function(data){
-    PLAYERS[data.username] = data.password;
-}
 /********************** Les classes ******************/
 
 /* Classe qui gère les joueurs */
@@ -77,7 +67,17 @@ class Domino {
         this.numbre_1 = numbre_1;
         this.numbre_2 = numbre_2;
         this.numbre_used = numbre_1;
-        this.state = "North";
+        /* Plusieurs états pour savoir quel domino peut-être joué 
+        -> Jouable : C'est à dire qu'il fait parti des Dominos qui peuvent être possiblement 
+        posés au moment où c'est au joueur de jouer.
+        -> Injouable : Le Domino est encore dans le Deck du joueur,
+        Mais il ne peut pas être joué au vu des Dominos déjas posés.
+        -> Posé : Le Domino est posé sur le terrain de jeu,
+        il ne peut pas être modifié.
+        --> Entourable : Lorsqu'un Domino est posé sur le terrain, il est "entourable",
+        c'est à dire que le prochain joueur peut poser un de ses Dominos à côté.
+        /* Par défaut, les Dominos sont tous injouables */
+        this.state = "Injouable";
     }
 
     flip() {
@@ -116,9 +116,27 @@ class Domino {
     };*/
 }
 
+/*************** Les fonctions **************/
+
+var LesDominosDuDeckJouables = function(data){
+    var DECK = data.deck;
+    for (var i = 0; i < DECK.length; i++){
+        if (DECK[i].numbre_1 == data.possibility || DECK[i].numbre_2 == data.possibility){
+            DECK[i].state = "Jouable";
+        }
+    }
+}
+
+var AnalyserLesOptions = function(deck){
+    for (var i = 0; i < ChiffresJouables.length; i++){
+        LesDominosDuDeckJouables({possibility: ChiffresJouables[i], deck: deck})
+    }
+    socket.emit('dessinerEnRouge', deck);
+}
+
+
 
 /* Création des dominos */
-const allDominos = {};
 k = 0;
 for (var i = 0; i <= 6; i++){
     for (var j = i; j <= 6; j++){
@@ -127,8 +145,46 @@ for (var i = 0; i <= 6; i++){
     }
 }
 
-/*************** Les fonctions **************/
+var CopyList = function(List){
+    allDominosToBeUsed = [];
+    for (var i = 0; i < List.length; i++){
+        allDominosToBeUsed.push(List[i]);
+    }
+    return(allDominosToBeUsed);
+}
+/* Méthode qui choisit des dominos au hasard au début pour
+ créer le deck du joueur */
+var chooseDominosForDeck = function(){
+    var Dominos = [];
+    var indexes_used = [];
+    for (var i = 0; i < 7; i++){
+        var index = Math.floor(Math.random()*allDominosToBeUsed.length);
+        while (indexes_used.includes(index)){
+            index = Math.floor(Math.random()*allDominosToBeUsed.length);
+        }
+        indexes_used.push(index);
+        Dominos.push(allDominosToBeUsed[index]);
+        delete allDominosToBeUsed[index];
+        /* Créer une autre liste qui recharge à la fin du jeu, 
+        pour pas relancer le serveur à chaque fois */
+    }
+    return Dominos;
+}
 
+/* Méthode qui return true (ou false)
+ si le password entré par le joueur est le bon*/
+var isValidPassword = function(data){
+    return PLAYERS[data.username] === data.password;
+}
+
+/* return true ou false si le nom du player est déjà utilisé */
+var isUsernameTaken = function(data){
+    return PLAYERS[data.username];
+}
+ /* Méthode qui ajoute le profile d'un joueur à la dB */
+var addPlayer = function(data){
+    PLAYERS[data.username] = data.password;
+}
 /************************ Lancement du serveur ***************************/
 
 /* Dès qu'il y a une connection, la function ci-dessous est appelée */
@@ -136,6 +192,8 @@ var io = require('socket.io')(serv, {});
 
 io.sockets.on('connection', function(socket){
     var player_name = 'None';
+    var allDominosToBeUsed = CopyList(allDominos);
+
     /* Réception côté serveur de la connexion du client */
     socket.on('signIn', function(data){
         if (isValidPassword(data)){
@@ -164,6 +222,10 @@ io.sockets.on('connection', function(socket){
     représente un joueur avec des attributs (ici id) */
     SOCKET_LIST[socket.id] = socket;
 
+
+    var deck = chooseDominosForDeck();
+    socket.emit('drawDeck', deck);
+
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */
     /* On utilise son identifiant, socket.id pour le reconnaitre */
@@ -179,5 +241,5 @@ io.sockets.on('connection', function(socket){
         }
     });
 
-    socket.emit('drawDeck');
+    
 });

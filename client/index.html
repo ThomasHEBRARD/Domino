@@ -25,11 +25,16 @@
             <canvas id = "ctx" width="1000" height="500" 
                 style="border:1px solid #000000;"></canvas>
         
-        <div id="chat-text" style="width:100px;height:100px;overflow-y:scroll">
-            <div>Hello!</div>
+        <div id="chat-text" style="width:1000px;height:500px;overflow-y:scroll">
+            <div>
+                <h1>
+                    Chat instantané:
+                </h1>
+            </div>
         </div>
     
         <form id="chat-form">
+            <label for="chat-input">Entrez votre message ici:</label>
             <input id="chat-input" type="text" style="width:500px"></input>
         </form>
         </div>
@@ -42,7 +47,8 @@
     /* On initialise la connection entre le client et le serveur */
     var socket = io();
 
-    /* Sign */
+    /******************** Sign ********************/
+
     var sign = document.getElementById('sign');
     var sign_username = document.getElementById('sign-username');
     var sign_password = document.getElementById('sign-password');
@@ -74,19 +80,11 @@
         }
     });
 
-    /* Le chat instantané */
+    /******************** Le chat instantané *******************/
+
     var chatText = document.getElementById('chat-text');
     var chatInput = document.getElementById('chat-input');
     var chatForm = document.getElementById('chat-form');
-
-    /* Le Jeu */
-    /* Pour dessiner le terrain de jeu*/
-    var ctx = document.getElementById("ctx").getContext("2d");
-    ctx.font = '30px Arial';
-
-    /* Pour dessiner le deck de chaque joueur */
-    var deck = document.getElementById("deck").getContext("2d");
-    deck.font = '30px Arial';
 
     socket.on('addToChat', function(data){
         chatText.innerHTML += '<div>' + data + '</div>';
@@ -96,18 +94,70 @@
         /* Si on a pas un preventDefault, en appuyant sur entrée, cela va
         refresh la page. */
         e.preventDefault();
+        /* On envoit au server le message que l'on veut envoyer sous vorme d'une variable */
         socket.emit('sendMsgToServer', chatInput.value);
+        /* On resert la variable */
         chatInput.value = '';
     };
 
-    socket.on('drawDeck', function(){
-        var x = 10;
-        var y = 10;
+    /**************************** Le Jeu ************************/
 
+    /* Pour dessiner le terrain de jeu*/
+    var c1 = document.getElementById("ctx");
+    var pinceau = c1.getContext("2d");
+    c1.font = '30px Arial';
+
+    /* Tracé de la grille */
+    var ecart = 45; 
+
+    /* Lignes */
+    for(var h = ecart ; h < c1.height ; h += ecart) {
+        pinceau.moveTo(0, h); //déplacer le pinceau à (x,y) sans tracer
+        pinceau.lineTo(c1.width, h); //tracer jusqu'à (x,y)
+    }
+    /* Colonnes */
+    for(var w = ecart ; w < c1.width ; w += ecart) {
+        pinceau.moveTo(w, 0);
+        pinceau.lineTo(w, c1.height);
+    }
+    /* Tracé */
+    pinceau.stroke();
+
+    /* Pour dessiner le deck de chaque joueur */
+    var deck = document.getElementById("deck").getContext("2d");
+    deck.font = '30px Arial';
+
+    /********* Dessin des dominos ************/
+
+    /* Dessine un Domino */
+    var drawDomino = function(data){
+        deck.strokeRect(data.x, data.y, 45, 45, data.color);
+        deck.fillText(data.numbre.toString(), data.x+15, data.y+30);
+    }
+
+    /* Dessine le Deck du Joueur */
+    var drawDeck = function(data){
+        var color = data.color;
+        var data = data.deck;
+        /* Définition des bords */
+        var a = 10;
+        var b = 10;
+        /* data est ici la variable deck, un array des 7 Dominos du Deck */
         for (var i = 0; i < 7; i++){
-            deck.strokeRect(x, y, 50, 90, "blue");
-            x += 65;
-        } 
+            drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b, color: color});
+            drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
+        }
+    }
+    /* Appelle la fonction qui dessine le deck du joueur */
+    socket.on('drawDeck', function(data){
+        drawDeck({deck: data, color: "blue"});
     });
-    
+
+    /* Dessine le contour des dominos Jouables en Rouge */
+    socket.on('dessinerEnRouge', function(data){
+        /* data est un deck */
+        for (var i = 0; i < data.length; i++){
+            drawDeck({deck: data, color: "red"});
+        }
+    });
 </script>
