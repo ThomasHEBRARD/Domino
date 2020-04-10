@@ -17,6 +17,7 @@ serv.listen(8000);
 
 console.log("Le server a démarré")
 
+/***************** Déclaration de constantes *********************/
 
 /* Liste des sockets des joueurs */
 var SOCKET_LIST = {};
@@ -41,7 +42,6 @@ class Player {
         this.name = name;
         this.deck = [];
         this.socket = socket;
-        PLAYER_LIST.push(this.deck);
     }
     /* Méthode qui est lancée quand un joueur se connecte */
     onConnect(socket) {
@@ -102,11 +102,8 @@ var RecherchePlusGrandDouble = function(data){
             d2.push(doubles_player1[doubles_player1.length - 1].chiffre_du_domino);
         }
     }
-    
     var max_1 = Math.max(d1);
     var max_2 = Math.max(d2);
-
-    
 
     if (max([max_1, max_2]) == max_1){
         var index = 0;
@@ -143,9 +140,10 @@ var QuiCommence = function(data){
         var index_du_domino = Resultat.index_du_domino;
     }
     
-    var le_domino = PLAYER_LIST[numero_du_joueur][index_du_domino]
+    var le_domino = PLAYER_LIST[numero_du_joueur][index_du_domino];
+    le_domino.state = "Entourable";
     // À TRAITER : Dessiner le domino de départ et l'enlever au joueur
-    socket.emit('Placetment du premier Domino', )
+    socket.emit('Placement_du_premier_domino', )
 }
 
 var LesDominosDuDeckJouables = function(data){
@@ -233,6 +231,7 @@ var io = require('socket.io')(serv, {});
 
 io.sockets.on('connection', function(socket){
     var player_name = 'None';
+    signIn = false;
 
     if (PLAYER_LIST.length == 0){
         var allDominosToBeUsed = CopyList(allDominos);
@@ -246,7 +245,19 @@ io.sockets.on('connection', function(socket){
                     /* Création du joueur qui s'est connecté */
                     var player = new Player(data.username, socket);
                     player_name = data.username;
+                    var deck = chooseDominosForDeck();
+                    player.deck = deck;
+                    PLAYER_LIST.push(deck);
+                    signIn = true;
+
+                    /* On associe un id unique à chaque joueur */
+                    socket.id = Math.random();
+        
+                    /* On ajoute à la liste des joueurs l'objet socket qui
+                    représente un joueur avec des attributs (ici id) */
+                    SOCKET_LIST[socket.id] = socket;
                     socket.emit('signInResponse', {success:true});
+                    socket.emit('drawDeck', deck);
                 } else {
                     socket.emit('signInResponse', {connected: true});
                 }
@@ -258,6 +269,8 @@ io.sockets.on('connection', function(socket){
         }
     });
 
+    console.log(SOCKET_LIST);
+
     socket.on('signUp', function(data){
         if (isUsernameTaken(data)){
             socket.emit('signUpResponse', {success:false});
@@ -268,18 +281,7 @@ io.sockets.on('connection', function(socket){
     });
 
     /* On créé des Decks seulement sur moins de 2 joueurs sont connectés */
-    if (PLAYER_LIST.length <= 2){
-
-        /* On associe un id unique à chaque joueur */
-        socket.id = Math.random();
-        
-        /* On ajoute à la liste des joueurs l'objet socket qui
-        représente un joueur avec des attributs (ici id) */
-        SOCKET_LIST[socket.id] = socket;
-
-        var deck = chooseDominosForDeck();
-        player.deck = deck;
-        socket.emit('drawDeck', deck);
+    if (PLAYER_LIST.length == 2 && signIn == true){
 
         socket.emit('PlacerPremierDomino',   );
 
@@ -301,7 +303,8 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('QuelDomino', function(data){
+        /* data est le numero du domino du deck du joueur */
         /* Remettre les Dominos Jouables en Ijouable */
-        socket.emit('LeDominoChoisi', {domino: deck[data.numero]})
+        /*socket.emit('LeDominoChoisi', {domino: deck[data.numero]})*/
     });
 });
