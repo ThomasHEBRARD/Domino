@@ -63,6 +63,10 @@
         socket.emit('signUp', {username:sign_username.value, password:sign_password.value})
     }
 
+    socket.on('TropDeJoueurs', function(){
+        alert('Trop de joueurs sont connectés (limité à 2 joueurs)');
+    });
+
     socket.on('signInResponse', function(data){
         if(data.success){
             sign.style.display = 'none';
@@ -148,7 +152,7 @@
     /* Dessine un Domino */
     var drawDomino = function(data){
         deck.strokeRect(data.x, data.y, 45, 45, data.color);
-        deck.fillText(data.numbre.toString(), data.x+15, data.y+30);
+        deck.fillText(data.numbre.toString(), data.x + 15, data.y + 30);
     }
 
     /* Dessine le Deck du Joueur */

@@ -22,7 +22,7 @@ console.log("Le server a démarré")
 var SOCKET_LIST = {};
 var PLAYER_LIST = [];
 
-/* username:password de tous les joueurs qui ont SignUp */
+/* Base de donnée username:password de tous les joueurs qui ont SignUp */
 var PLAYERS = {
     "thomas": "coucou",
     "edouard": "heho",
@@ -39,8 +39,9 @@ var ChiffresJouables = [];
 class Player {
     constructor(socket, name) {
         this.name = name;
-        this.number_dominos = 7;
+        this.deck = [];
         this.socket = socket;
+        PLAYER_LIST.push(this.deck);
     }
     /* Méthode qui est lancée quand un joueur se connecte */
     onConnect(socket) {
@@ -53,12 +54,6 @@ class Player {
         /* On l'enlève de la liste des joueurs */
         delete SOCKET_LIST[socket.id];
         delete PLAYER_LIST[this.name];
-    };
-
-    /* Méthode qui met à jour les paramètres du joueur */
-    update() {
-        var pack = [];
-        return pack;
     };
 }
 
@@ -80,44 +75,78 @@ class Domino {
         /* Par défaut, les Dominos sont tous injouables */
         this.state = "Injouable";
     }
-
-    flip() {
-        /* On initialise ce que l'on va envoyer en data pour le socket vers le client */
-        var pack = [];
-        /* On garde une trace de l'orientation du domino */
-        if (this.state == "North") {
-            this.state == "East";
-        }
-        else if (this.state == "East") {
-            this.state = "South";
-        }
-        else if (this.state == "South") {
-            this.state = "West";
-        }
-        else if (this.state == "West") {
-            this.state = "North";
-        }
-        pack.push({
-        num1: this.numbre_1,
-            num2: this.numbre_2,
-            state: this.state
-        });
-
-        /* On envoit au client pour changer le canvas */
-        socket.emit('flip', pack);
-    };
-
-    /*correspondance(Domino) {
-        if (this.numbre_used == nbr2) {
-            return (true);
-        }
-        else {
-            return (false);
-        }
-    };*/
 }
 
 /*************** Les fonctions **************/
+
+/* Pour commencer à jouer, on doit savoir qui a le plus grand double*/
+/* Cette fonction renverra le numéro du joueur qui doit jouer, ainsi que le domino joué*/
+var RecherchePlusGrandDouble = function(data){
+    /* data ici sera un dictionnaire de deck1 et deck2 */
+    var doubles_player1 = [];
+    var doubles_player2 = [];
+    var deck1 = data.deck1;
+    var deck2 = data.deck2;
+    var d1 = [];
+    var d2 = [];
+
+    for (var i = 0; i < deck1.length; i++){
+        if (deck1[i].numbre_1 == deck1[i].numbre_2){
+            doubles_player1.push({chiffre_du_domino: deck[i].numbre_1, index_du_domino: i});
+            d1.push(doubles_player1[doubles_player1.length - 1].chiffre_du_domino);
+        }
+    }
+    for (var i = 0; i < deck2.length; i++){
+        if (deck2[i].numbre_1 == deck2[i].numbre_2){
+            doubles_player2.push({chiffre_du_domino: deck1[i].numbre_1, index_du_domino: i});
+            d2.push(doubles_player1[doubles_player1.length - 1].chiffre_du_domino);
+        }
+    }
+    
+    var max_1 = Math.max(d1);
+    var max_2 = Math.max(d2);
+
+    
+
+    if (max([max_1, max_2]) == max_1){
+        var index = 0;
+        for (var i = 0; i < d1.length; i++){
+            if (doubles_player1[i] == max_1){
+                index = i;
+            }
+        }
+        return {numero_joueur: 1, index_du_domino: index, success: true};
+    } else if (max([max_1, max_2]) == max_2){
+        for (var i = 0; i < d2.length; i++){
+            if (doubles_player2[i] == max_2){
+                index = i;
+            }
+        }
+        return {numero_joueur: 2, index_du_domino: index, success: true};
+    } else {
+        if (Math.random() >= 0.5){
+            return {numero_joueur: 2, chiffre_du_domino: 0, success: false};
+        } else {
+            return {numero_joueur: 1, chiffre_du_domino: 0, success: false};
+        }
+    }
+}
+
+
+/* Choisir quel joueur commence : data est un dictionnaire des decsk des 2 joueurs */
+var QuiCommence = function(data){
+    Resultat = RecherchePlusGrandDouble(data);
+    var numero_du_joueur = Resultat.numero_joueur;
+    if (!(Resultat.success)){
+        // À TRAITER, PAS DE DOUBLE
+    } else {
+        var index_du_domino = Resultat.index_du_domino;
+    }
+    
+    var le_domino = PLAYER_LIST[numero_du_joueur][index_du_domino]
+    // À TRAITER : Dessiner le domino de départ et l'enlever au joueur
+    socket.emit('Placetment du premier Domino', )
+}
 
 var LesDominosDuDeckJouables = function(data){
     var DECK = data.deck;
@@ -151,6 +180,7 @@ var CopyList = function(List){
     }
     return(allDominosToBeUsed);
 }
+
 /* Méthode qui choisit des dominos au hasard au début pour
  créer le deck du joueur */
 var chooseDominosForDeck = function(){
@@ -180,6 +210,7 @@ var isValidPassword = function(data){
 var isUsernameTaken = function(data){
     return PLAYERS[data.username];
 }
+
  /* Méthode qui ajoute le profile d'un joueur à la dB */
 var addPlayer = function(data){
     PLAYERS[data.username] = data.password;
@@ -202,27 +233,28 @@ var io = require('socket.io')(serv, {});
 
 io.sockets.on('connection', function(socket){
     var player_name = 'None';
+
     if (PLAYER_LIST.length == 0){
         var allDominosToBeUsed = CopyList(allDominos);
     }
-    while (!(PLAYER_LIST.length == 2)){
-        
-    }
-    
 
     /* Réception côté serveur de la connexion du client */
     socket.on('signIn', function(data){
-        if (isValidPassword(data)){
-            if (!(AlreadyConnected(data))){
-                /* Création du joueur qui s'est connecté */
-                var player = new Player(data.username, socket);
-                player_name = data.username;
-                socket.emit('signInResponse', {success:true});
+        if (!(PLAYER_LIST.length == 2)){
+            if (isValidPassword(data)){
+                if (!(AlreadyConnected(data))){
+                    /* Création du joueur qui s'est connecté */
+                    var player = new Player(data.username, socket);
+                    player_name = data.username;
+                    socket.emit('signInResponse', {success:true});
+                } else {
+                    socket.emit('signInResponse', {connected: true});
+                }
             } else {
-                socket.emit('signInResponse', {connected: true});
+                socket.emit('signInResponse', {success:false});
             }
         } else {
-            socket.emit('signInResponse', {success:false});
+            socket.emit('TropDeJoueurs');
         }
     });
 
@@ -235,20 +267,23 @@ io.sockets.on('connection', function(socket){
         }
     });
 
-    /* On associe un id unique à chaque joueur */
-    socket.id = Math.random();
-    
-    /* On ajoute à la liste des joueurs l'objet socket qui
-    représente un joueur avec des attributs (ici id) */
-    SOCKET_LIST[socket.id] = socket;
+    /* On créé des Decks seulement sur moins de 2 joueurs sont connectés */
+    if (PLAYER_LIST.length <= 2){
 
+        /* On associe un id unique à chaque joueur */
+        socket.id = Math.random();
+        
+        /* On ajoute à la liste des joueurs l'objet socket qui
+        représente un joueur avec des attributs (ici id) */
+        SOCKET_LIST[socket.id] = socket;
 
-    var deck = chooseDominosForDeck();
-    socket.emit('drawDeck', deck);
+        var deck = chooseDominosForDeck();
+        player.deck = deck;
+        socket.emit('drawDeck', deck);
 
-    socket.emit('PlacerPremierDomino', 
+        socket.emit('PlacerPremierDomino',   );
 
-    );
+    }
 
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */
