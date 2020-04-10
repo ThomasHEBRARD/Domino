@@ -67,8 +67,10 @@
         if(data.success){
             sign.style.display = 'none';
             game.style.display = 'inline-block';
-        } else {
+        } else if (!(data.seccess)){
             alert('Mot de passe ou username incorrect');
+        } else {
+            alert('Joueur déjà connecté');
         }
     });
 
@@ -106,17 +108,10 @@
     var c1 = document.getElementById("ctx");
     var pinceau = c1.getContext("2d");
     c1.font = '30px Arial';
-<<<<<<< HEAD
 
     /* Tracé de la grille */
     var ecart = 45; 
 
-=======
-
-    /* Tracé de la grille */
-    var ecart = 45; 
-
->>>>>>> 76384766d7975714da206debca8af4fa06498501
     /* Lignes */
     for(var h = ecart ; h < c1.height ; h += ecart) {
         pinceau.moveTo(0, h); //déplacer le pinceau à (x,y) sans tracer
@@ -143,10 +138,13 @@
     
     /********* Dessin des dominos ************/
 
-<<<<<<< HEAD
-    /* Dessine un Domino */
-=======
-<<<<<<< HEAD
+    var ChoixDomino = function(data){
+        data.x += 10;
+        if (10 <= data.y <= 100){
+            var numero = Math.floor(data.x/65);
+            socket.emit('QuelDomino', {numero});
+        }
+    }
     /* Dessine un Domino */
     var drawDomino = function(data){
         deck.strokeRect(data.x, data.y, 45, 45, data.color);
@@ -157,39 +155,17 @@
     var drawDeck = function(data){
         var color = data.color;
         var data = data.deck;
-=======
->>>>>>> 80ddc6629bdc26ceb447258906bb8984112e9faa
-    var drawDomino = function(data){
-        deck_context.strokeRect(data.x, data.y, 45, 45, data.color);
-        deck_context.fillText(data.numbre.toString(), data.x+15, data.y+30);
-    }
 
-<<<<<<< HEAD
-    /* Dessine le Deck du Joueur */
-    var drawDeck = function(data){
-        var color = data.color;
-        var data = data.deck;
-=======
-    socket.on('drawDeck', function(data){
->>>>>>> 76384766d7975714da206debca8af4fa06498501
->>>>>>> 80ddc6629bdc26ceb447258906bb8984112e9faa
         /* Définition des bords */
         var a = 10;
         var b = 10;
         /* data est ici la variable deck, un array des 7 Dominos du Deck */
         for (var i = 0; i < 7; i++){
-<<<<<<< HEAD
             drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b, color: color});
             drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
         }
-    }
-
-    var ChoixDomino = function(data){
-        if (10 <= data.y <= 100){
-            
-        }
-    }
-
+    };
+    
     /* Appelle la fonction qui dessine le deck du joueur */
     socket.on('drawDeck', function(data){
         drawDeck({deck: data, color: "blue"});
@@ -201,28 +177,9 @@
         for (var i = 0; i < data.length; i++){
             drawDeck({deck: data, color: "red"});
         }
-=======
-<<<<<<< HEAD
-            drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b, color: color});
-            drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
-        }
-    }
-    /* Appelle la fonction qui dessine le deck du joueur */
-    socket.on('drawDeck', function(data){
-        drawDeck({deck: data, color: "blue"});
     });
 
-    /* Dessine le contour des dominos Jouables en Rouge */
-    socket.on('dessinerEnRouge', function(data){
-        /* data est un deck */
-        for (var i = 0; i < data.length; i++){
-            drawDeck({deck: data, color: "red"});
-        }
-=======
-            drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b});
-            drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
-        }
->>>>>>> 76384766d7975714da206debca8af4fa06498501
->>>>>>> 80ddc6629bdc26ceb447258906bb8984112e9faa
-    });
+    socket.on('LeDominoChoisi', function(data){
+
+    })
 </script>

@@ -20,7 +20,7 @@ console.log("Le server a démarré")
 
 /* Liste des sockets des joueurs */
 var SOCKET_LIST = {};
-var PLAYER_LIST = {};
+var PLAYER_LIST = [];
 
 /* username:password de tous les joueurs qui ont SignUp */
 var PLAYERS = {
@@ -29,16 +29,9 @@ var PLAYERS = {
 }
 /* Variable globale qui contient tous les dominos possibles */
 const allDominos = [];
-<<<<<<< HEAD
+
 /* Variable qui contient les chiffres Jouables */
 var ChiffresJouables = [];
-=======
-<<<<<<< HEAD
-/* Variable qui contient les chiffres Jouables */
-var ChiffresJouables = [];
-=======
->>>>>>> 76384766d7975714da206debca8af4fa06498501
->>>>>>> 80ddc6629bdc26ceb447258906bb8984112e9faa
 
 /********************** Les classes ******************/
 
@@ -125,27 +118,6 @@ class Domino {
 }
 
 /*************** Les fonctions **************/
-<<<<<<< HEAD
-
-var LesDominosDuDeckJouables = function(data){
-    var DECK = data.deck;
-    for (var i = 0; i < DECK.length; i++){
-        if (DECK[i].numbre_1 == data.possibility || DECK[i].numbre_2 == data.possibility){
-            DECK[i].state = "Jouable";
-        }
-    }
-}
-
-var AnalyserLesOptions = function(deck){
-    for (var i = 0; i < ChiffresJouables.length; i++){
-        LesDominosDuDeckJouables({possibility: ChiffresJouables[i], deck: deck})
-    }
-    socket.emit('dessinerEnRouge', deck);
-}
-
-
-=======
->>>>>>> 76384766d7975714da206debca8af4fa06498501
 
 var LesDominosDuDeckJouables = function(data){
     var DECK = data.deck;
@@ -197,7 +169,6 @@ var chooseDominosForDeck = function(){
     }
     return Dominos;
 }
-<<<<<<< HEAD
 
 /* Méthode qui return true (ou false)
  si le password entré par le joueur est le bon*/
@@ -205,15 +176,6 @@ var isValidPassword = function(data){
     return PLAYERS[data.username] === data.password;
 }
 
-=======
-
-/* Méthode qui return true (ou false)
- si le password entré par le joueur est le bon*/
-var isValidPassword = function(data){
-    return PLAYERS[data.username] === data.password;
-}
-
->>>>>>> 76384766d7975714da206debca8af4fa06498501
 /* return true ou false si le nom du player est déjà utilisé */
 var isUsernameTaken = function(data){
     return PLAYERS[data.username];
@@ -222,22 +184,43 @@ var isUsernameTaken = function(data){
 var addPlayer = function(data){
     PLAYERS[data.username] = data.password;
 }
-/************************ Lancement du serveur ***************************/
+
+var AlreadyConnected = function(data){
+    if (PLAYER_LIST.includes(data.username)){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**************************************************************************/
+/************************ Lancement de la page ***************************/
+/**************************************************************************/
 
 /* Dès qu'il y a une connection, la function ci-dessous est appelée */
 var io = require('socket.io')(serv, {});
 
 io.sockets.on('connection', function(socket){
     var player_name = 'None';
-    var allDominosToBeUsed = CopyList(allDominos);
+    if (PLAYER_LIST.length == 0){
+        var allDominosToBeUsed = CopyList(allDominos);
+    }
+    while (!(PLAYER_LIST.length == 2)){
+        
+    }
+    
 
     /* Réception côté serveur de la connexion du client */
     socket.on('signIn', function(data){
         if (isValidPassword(data)){
-            /* Création du joueur qui s'est connecté */
-            var player = new Player(data.username, socket);
-            player_name = data.username;
-            socket.emit('signInResponse', {success:true});
+            if (!(AlreadyConnected(data))){
+                /* Création du joueur qui s'est connecté */
+                var player = new Player(data.username, socket);
+                player_name = data.username;
+                socket.emit('signInResponse', {success:true});
+            } else {
+                socket.emit('signInResponse', {connected: true});
+            }
         } else {
             socket.emit('signInResponse', {success:false});
         }
@@ -263,6 +246,10 @@ io.sockets.on('connection', function(socket){
     var deck = chooseDominosForDeck();
     socket.emit('drawDeck', deck);
 
+    socket.emit('PlacerPremierDomino', 
+
+    );
+
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */
     /* On utilise son identifiant, socket.id pour le reconnaitre */
@@ -278,5 +265,8 @@ io.sockets.on('connection', function(socket){
         }
     });
 
-    
+    socket.on('QuelDomino', function(data){
+        /* Remettre les Dominos Jouables en Ijouable */
+        socket.emit('LeDominoChoisi', {domino: deck[data.numero]})
+    });
 });
