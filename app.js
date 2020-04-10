@@ -29,8 +29,16 @@ var PLAYERS = {
 }
 /* Variable globale qui contient tous les dominos possibles */
 const allDominos = [];
+<<<<<<< HEAD
 /* Variable qui contient les chiffres Jouables */
 var ChiffresJouables = [];
+=======
+<<<<<<< HEAD
+/* Variable qui contient les chiffres Jouables */
+var ChiffresJouables = [];
+=======
+>>>>>>> 76384766d7975714da206debca8af4fa06498501
+>>>>>>> 80ddc6629bdc26ceb447258906bb8984112e9faa
 
 /********************** Les classes ******************/
 
@@ -117,6 +125,27 @@ class Domino {
 }
 
 /*************** Les fonctions **************/
+<<<<<<< HEAD
+
+var LesDominosDuDeckJouables = function(data){
+    var DECK = data.deck;
+    for (var i = 0; i < DECK.length; i++){
+        if (DECK[i].numbre_1 == data.possibility || DECK[i].numbre_2 == data.possibility){
+            DECK[i].state = "Jouable";
+        }
+    }
+}
+
+var AnalyserLesOptions = function(deck){
+    for (var i = 0; i < ChiffresJouables.length; i++){
+        LesDominosDuDeckJouables({possibility: ChiffresJouables[i], deck: deck})
+    }
+    socket.emit('dessinerEnRouge', deck);
+}
+
+
+=======
+>>>>>>> 76384766d7975714da206debca8af4fa06498501
 
 var LesDominosDuDeckJouables = function(data){
     var DECK = data.deck;
@@ -168,6 +197,7 @@ var chooseDominosForDeck = function(){
     }
     return Dominos;
 }
+<<<<<<< HEAD
 
 /* Méthode qui return true (ou false)
  si le password entré par le joueur est le bon*/
@@ -175,6 +205,15 @@ var isValidPassword = function(data){
     return PLAYERS[data.username] === data.password;
 }
 
+=======
+
+/* Méthode qui return true (ou false)
+ si le password entré par le joueur est le bon*/
+var isValidPassword = function(data){
+    return PLAYERS[data.username] === data.password;
+}
+
+>>>>>>> 76384766d7975714da206debca8af4fa06498501
 /* return true ou false si le nom du player est déjà utilisé */
 var isUsernameTaken = function(data){
     return PLAYERS[data.username];
