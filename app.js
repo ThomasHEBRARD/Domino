@@ -19,10 +19,9 @@ console.log("Le server a démarré")
 
 /***************** Déclaration de constantes *********************/
 
-/* Liste des sockets des joueurs */
+/* Liste des sockets des joueurs CONNECTÉS */
 var SOCKET_LIST = [];
 var PLAYER_LIST = [];
-var DECK_LIST = [];
 
 /* Garde une trace des dominos joués */
 var DOMINOS_JOUES = [];
@@ -49,6 +48,7 @@ class Player {
         this.name = name;
         this.deck = [];
         this.socket = socket;
+        this.compteur = 0;
     };
 
     /* Méthode qui est lancée quand un joueur se connecte */
@@ -141,20 +141,23 @@ var RecherchePlusGrandDouble = function(data){
 
 /* Choisir quel joueur commence : data est un dictionnaire des decsk des 2 joueurs */
 var QuiCommence = function(data){
+    /* data = [deck1, deck2]*/
     Resultat = RecherchePlusGrandDouble(data);
     var numero_du_joueur = Resultat.numero_joueur;
 
     if (!(Resultat.success)){
-        // À TRAITER, PAS DE DOUBLE
+        ///////////// À TRAITER, PAS DE DOUBLE
     } else {
         /* Si il y a effectivement eu au moins un double */
         var index_du_domino = Resultat.index_du_domino;
     }
     /* On cherche le domino en question pour le jouer */
-    var le_domino = PLAYER_LIST[numero_du_joueur][index_du_domino];
+    var le_domino = PLAYER_LIST[numero_du_joueur].deck[index_du_domino];
     le_domino.state = "Entourable";
 
     /* Étape pour dire que c'est bien ce joueur qui a commencé à jouer */
+
+    console.log({numero_joueur: numero_du_joueur, domino: le_domino});
     return {numero_joueur: numero_du_joueur, domino: le_domino};
 }
 
@@ -211,7 +214,7 @@ var chooseDominosForDeck = function(){
 /* Méthode qui return true (ou false)
  si le password entré par le joueur est le bon*/
 var isValidPassword = function(data){
-    return PLAYERS[data.username] === data.password;
+    return PLAYERS[data.username] == data.password;
 }
 
 /* return true ou false si le nom du player est déjà utilisé */
@@ -224,12 +227,14 @@ var addPlayer = function(data){
     PLAYERS[data.username] = data.password;
 }
 
-var AlreadyConnected = function(data){
-    if (PLAYER_LIST.includes(data.username)){
-        return true;
-    } else {
-        return false;
+var NotAlreadyConnected = function(data){
+    var boolean = true;
+    for (var i = 0; i < PLAYER_LIST.length; i++){
+        if (PLAYER_LIST[i].name == data.username){
+            boolean = false;
+        }
     }
+    return boolean;
 }
 
 /**************************************************************************/
@@ -248,39 +253,43 @@ io.sockets.on('connection', function(socket){
     }
     /* Réception côté serveur de la connexion du client */
     socket.on('signIn', function(data){
+        /* data = {
+            username: username,
+            password: password
+        }*/
         if (!(PLAYER_LIST.length == 2)){
             if (isValidPassword(data)){
-                if (!(AlreadyConnected(data))){
-                    /* Création du joueur qui s'est connecté */
-                    var player = new Player(data.username, socket);
-                    player_name = data.username;
+                if (NotAlreadyConnected(data)){
+                    var player = new Player(socket, data.username);
+                    PLAYER_LIST.push(player);
+                    /* Création du deck du joueur */
                     var deck = chooseDominosForDeck();
                     player.deck = deck;
-                    PLAYER_LIST.push(deck);
-                    DECK_LIST.push(player);
-                    console.log(DECK_LIST);
-                    signIn = true;
-
                     /* On associe un id unique à chaque joueur */
                     socket.id = Math.random(); 
                     /* On ajoute à la liste des joueurs l'objet socket qui
                     représente un joueur avec des attributs (ici id) */
                     SOCKET_LIST.push(socket);
-                    socket.emit('signInResponse', {success:true});
+                    /* On comunique au Client les Infos: */
+                    /* Ok le joueur peut se connecter, on peut changer de page */
+                    socket.emit('signInResponse', {success: 0});
+                    /* On peut dessiner son deck */
                     socket.emit('drawDeck', deck);
-                    socket.emit('Afficher_Joueur', {player_name: player_name});
+                    /* On peut afficher son nom */ 
+                    socket.emit('Afficher_Joueur', {player_name: player.name});
+
+                    /* PS : Ces trois emit peuvent être rassemblés en 1 seul */
                 } else {
-                    socket.emit('signInResponse', {connected: true});
+                    console.log('déja connecté');
+                    socket.emit('signInResponse', {success: 1});
                 }
             } else {
-                socket.emit('signInResponse', {success:false});
+                socket.emit('signInResponse', {success: 2});
             }
         } else {
             socket.emit('TropDeJoueurs');
         }
     });
-
-    
 
     socket.on('signUp', function(data){
         if (isUsernameTaken(data)){
@@ -292,13 +301,12 @@ io.sockets.on('connection', function(socket){
     });
 
     /* On créé des Decks seulement sur moins de 2 joueurs sont connectés */
-    if (PLAYER_LIST.length == 2 && signIn == true){
-        var data = QuiCommence(PLAYER_LIST);
+    if (PLAYER_LIST.length == 2){
         /* data = {
             numero_joueur:...
             le_domino:...
         }*/
-        socket.emit('PlacerPremierDomino', data);
+        socket.emit('PlacerPremierDomino', QuiCommence([PLAYER_LIST[0].deck, PLAYER_LIST[1].deck]));
     }
 
     /* On écoute à un émit coté client :*/
@@ -320,7 +328,7 @@ io.sockets.on('connection', function(socket){
         /* data est le numero du domino du deck du joueur */
         /* Savoir quel joueur a cliqué */
         var numero_joueur = SOCKET_LIST.indexOf(socket);
-        var le_domino = PLAYER_LIST[numero_joueur][data.numero];
+        var le_domino = PLAYER_LIST[numero_joueur].deck[data.numero];
         le_domino.state = "Entourable";
 
         /* Remettre les Dominos Jouables en Injouable */

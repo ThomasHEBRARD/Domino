@@ -74,10 +74,10 @@
     });
 
     socket.on('signInResponse', function(data){
-        if(data.success){
+        if(data.success == 0){
             sign.style.display = 'none';
             game.style.display = 'inline-block';
-        } else if (!(data.seccess)){
+        } else if (data.success == 2){
             alert('Mot de passe ou username incorrect');
         } else {
             alert('Joueur déjà connecté');
