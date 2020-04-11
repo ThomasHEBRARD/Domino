@@ -25,7 +25,7 @@
                     <div id = "Les_Infos">
                     </div>
                 </canvas>
-                <button onclick="commencer()">Commencer</button>
+                <button id="button_commencer" style="display:inline-block;" onclick="commencer()">Commencer</button>
 
             </div>
             <canvas id = "ctx" width="1035" height="495" 
@@ -158,27 +158,38 @@
             numero_joueur:...
             domino:...
         }*/
+        button_commencer.style.display = 'none';
         var dominoo = data.domino;
-        var DATA = {first_domino: true, chiffre_du_domino: dominoo.numbre_1};
+        var DATA = {
+            first_domino: true, 
+            chiffre_du_domino: dominoo.numbre_1, 
+            numero_joueur: data.numero_joueur, 
+            numero_domino: dominoo.id
+        };
         drawDominoGame(DATA);
     });
 
     var drawDominoGame = function(data){
         /* Dessiner le Domino, et voir pour son orientation */
-        var numbre = data.chiffre_du_domino;
-        pinceau.strokeRect(495, 225, 45, 45, "blue");
-        pinceau.fillText(numbre.toString(), 495 + 15, 225 + 30);
-        pinceau.strokeRect(495, 270, 45, 45, "blue");
-        pinceau.fillText(numbre.toString(), 495 + 15, 270 + 30);
-        pinceau.stroke();
+        if (data.first_domino){
+            var numbre = data.chiffre_du_domino;
+            pinceau.strokeRect(495, 225, 45, 45, "green");
+            pinceau.fillText(numbre.toString(), 495 + 15, 225 + 30);
+            pinceau.strokeRect(495, 270, 45, 45, "green");
+            pinceau.fillText(numbre.toString(), 495 + 15, 270 + 30);
+            pinceau.stroke();
+            used_domino({numero_joueur: data.numero_joueur, numero_domino: data.numero_domino});
+        } else {
+
+        }
     };
 
     var used_domino = function(data){
         deck_context.beginPath();
-        deck_context.moveTo(10 + data.x*65, 10);
-        deck_context.lineTo(data.x*65 + 55, 100);
+        deck_context.moveTo(10 + data.numero_domino*65, 10);
+        deck_context.lineTo(data.numero_domino*65 + 55, 100);
         deck_context.stroke();
-        AQuiDeJouer({jouer: false});
+        //AQuiDeJouer({jouer: false});
     }
 
     var ChoixDomino = function(data){
@@ -224,8 +235,6 @@
         }
     });
 
-    
-
     socket.on('LeDominoChoisi', function(data){
         used_domino(data);
         if (compteur == 0){
@@ -235,7 +244,6 @@
         }
         compteur += 1;
     });
-
     
 
     /************ Les infos ****************/

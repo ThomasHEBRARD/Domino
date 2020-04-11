@@ -309,7 +309,7 @@ io.sockets.on('connection', function(socket){
                 numero_joueur:...
                 le_domino:...
             }*/
-            data = QuiCommence({deck1: PLAYER_LIST[0].deck, deck2 :PLAYER_LIST[1].deck});
+            var data = QuiCommence({deck1: PLAYER_LIST[0].deck, deck2 :PLAYER_LIST[1].deck});
             console.log(data);
             socket.broadcast.emit('PlacerPremierDomino', data);
         }
@@ -326,8 +326,9 @@ io.sockets.on('connection', function(socket){
     
     /* Messagerie instantanée */
     socket.on('sendMsgToServer', function(data){
+        var index = SOCKET_LIST.indexOf(socket);
         for (var i in SOCKET_LIST) {
-            SOCKET_LIST[i].emit('addToChat', player_name + ': ' + data);
+            SOCKET_LIST[i].emit('addToChat', PLAYER_LIST[index].name + ': ' + data);
         }
     });
 
