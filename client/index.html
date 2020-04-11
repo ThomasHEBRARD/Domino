@@ -19,10 +19,14 @@
             <div>
                 <canvas id = "deck_canvas" width="500" height="200"
                 style="border:1px solid blue"></canvas>
-                <canvas id = "ctxx" width="500" height="200" 
-                style="border:1px solid red;"></canvas>
+
+                <canvas id = "info" width="500" height="200" 
+                style="border:1px solid red;">
+                    <div id = "Les_Infos"></div>
+                </canvas>
+
             </div>
-            <canvas id = "ctx" width="1000" height="500" 
+            <canvas id = "ctx" width="1035" height="495" 
                 style="border:1px solid #000000;"></canvas>
         
         <div id="chat-text" style="width:1000px;height:500px;overflow-y:scroll">
@@ -46,6 +50,8 @@
 <script>
     /* On initialise la connection entre le client et le serveur */
     var socket = io();
+
+    var nombre_domino = 0;
 
     /******************** Sign ********************/
 
@@ -146,11 +152,11 @@
         data.x += 10;
         if (10 <= data.y <= 100){
             var numero = Math.floor(data.x/65);
-            socket.emit('QuelDomino', {numero: numero});
+            socket.emit('QuelDomino', {numero: numero, x: Math.floor(data.x/65)});
         }
     }
     /* Dessine un Domino */
-    var drawDomino = function(data){
+    var drawDominoDeck = function(data){
         deck_context.strokeRect(data.x, data.y, 45, 45, data.color);
         deck_context.fillText(data.numbre.toString(), data.x + 15, data.y + 30);
     }
@@ -165,14 +171,11 @@
         var b = 10;
         /* data est ici la variable deck, un array des 7 Dominos du Deck */
         for (var i = 0; i < 7; i++){
-            drawDomino({numbre: data[i].numbre_1, x: a+(i*65), y: b, color: color});
-            drawDomino({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
+            drawDominoDeck({numbre: data[i].numbre_1, x: a+(i*65), y: b, color: color});
+            drawDominoDeck({numbre: data[i].numbre_2, x: a+(i*65), y: b+45});
         }
     };
     
-    var drawDominoGame = function(data){
-        /* Dessiner le Domino, et voir pour son orientation */
-    }
 
     /* Appelle la fonction qui dessine le deck du joueur */
     socket.on('drawDeck', function(data){
@@ -187,9 +190,56 @@
         }
     });
 
-    socket.on('LeDominoChoisi', function(data){
-        /* A CHANGER */
-        drawDominoGame(data);
-    })
+    var used_domino = function(data){
+        deck_context.beginPath();
+        deck_context.moveTo(10 + data.x*65, 10);
+        deck_context.lineTo(data.x*65 + 55, 100);
+        deck_context.stroke();
+        AQuiDeJouer({jouer: false});
+    }
 
+    socket.on('LeDominoChoisi', function(data){
+        used_domino(data);
+        if (compteur == 0){
+            drawDominoGame({first_domino: true});
+        } else {
+            drawDominoGame({first_domino: false});
+        }
+        compteur += 1;
+    });
+
+    var drawDominoGame = function(data){
+        /* Dessiner le Domino, et voir pour son orientation */
+        if (data.first_domino){
+            pinceau.strokeRect(495, 225, 45, 45, "blue");
+            pinceau.fillText(data.numbre.toString(), 495 + 15, 225 + 30);
+            pinceau.strokeRect(495, 270, 45, 45, "blue");
+            pinceau.fillText(data.numbre.toString(), 495 + 15, 270 + 30);
+        } else {
+
+        }
+    };
+
+    /************ Les infos ****************/
+    
+    var info = document.getElementById("info").getContext('2d');
+    info.font = "30px Arial";
+    var Les_Infos = document.getElementById("Les_Infos");
+
+    socket.on('Afficher_Joueur', function(data){
+        var name = data.player_name;
+        info.fillText(" Vous êtes: " + name.toString(), 15, 30);
+    });
+
+    var AQuiDeJouer = function(data){
+        if (data.jouer){
+            Les_Infos.innerHTML = '<div>' + "À toi de jouer" + '</div>';
+        } else {
+            Les_Infos.innerHTML = '<div>' + "Ce n'est pas à toi de jouer" + '</div>';
+        }
+    };
+
+    socket.on('AQuiDeJouer', function(data){
+        AQuiDeJouer(data);
+    });
 </script>

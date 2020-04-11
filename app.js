@@ -22,6 +22,7 @@ console.log("Le server a démarré")
 /* Liste des sockets des joueurs */
 var SOCKET_LIST = [];
 var PLAYER_LIST = [];
+var DECK_LIST = [];
 
 /* Garde une trace des dominos joués */
 var DOMINOS_JOUES = [];
@@ -31,8 +32,11 @@ var PLAYERS = {
     "thomas": "coucou",
     "edouard": "heho",
 }
+
 /* Variable globale qui contient tous les dominos possibles */
 const allDominos = [];
+var allDominosToBeUsed = [];
+var indexes_used = [];
 
 /* Variable qui contient les chiffres Jouables */
 var ChiffresJouables = [];
@@ -45,7 +49,8 @@ class Player {
         this.name = name;
         this.deck = [];
         this.socket = socket;
-    }
+    };
+
     /* Méthode qui est lancée quand un joueur se connecte */
     onConnect(socket) {
         PLAYER_LIST[name] = name;
@@ -95,20 +100,20 @@ var RecherchePlusGrandDouble = function(data){
 
     for (var i = 0; i < deck1.length; i++){
         if (deck1[i].numbre_1 == deck1[i].numbre_2){
-            doubles_player1.push({chiffre_du_domino: deck[i].numbre_1, index_du_domino: i});
+            doubles_player1.push({chiffre_du_domino: deck1[i].numbre_1, index_du_domino: i});
             d1.push(doubles_player1[doubles_player1.length - 1].chiffre_du_domino);
         }
     }
     for (var i = 0; i < deck2.length; i++){
         if (deck2[i].numbre_1 == deck2[i].numbre_2){
-            doubles_player2.push({chiffre_du_domino: deck1[i].numbre_1, index_du_domino: i});
-            d2.push(doubles_player1[doubles_player1.length - 1].chiffre_du_domino);
+            doubles_player2.push({chiffre_du_domino: deck2[i].numbre_1, index_du_domino: i});
+            d2.push(doubles_player2[doubles_player2.length - 1].chiffre_du_domino);
         }
     }
     var max_1 = Math.max(d1);
     var max_2 = Math.max(d2);
 
-    if (max([max_1, max_2]) == max_1){
+    if (Math.max([max_1, max_2]) == max_1){
         var index = 0;
         for (var i = 0; i < d1.length; i++){
             if (doubles_player1[i] == max_1){
@@ -116,7 +121,7 @@ var RecherchePlusGrandDouble = function(data){
             }
         }
         return {numero_joueur: 1, index_du_domino: index, success: true};
-    } else if (max([max_1, max_2]) == max_2){
+    } else if (Math.max([max_1, max_2]) == max_2){
         for (var i = 0; i < d2.length; i++){
             if (doubles_player2[i] == max_2){
                 index = i;
@@ -124,6 +129,7 @@ var RecherchePlusGrandDouble = function(data){
         }
         return {numero_joueur: 2, index_du_domino: index, success: true};
     } else {
+        /* Si y'a aucun double, on choisi au pif */
         if (Math.random() >= 0.5){
             return {numero_joueur: 2, chiffre_du_domino: 0, success: false};
         } else {
@@ -137,16 +143,19 @@ var RecherchePlusGrandDouble = function(data){
 var QuiCommence = function(data){
     Resultat = RecherchePlusGrandDouble(data);
     var numero_du_joueur = Resultat.numero_joueur;
+
     if (!(Resultat.success)){
         // À TRAITER, PAS DE DOUBLE
     } else {
+        /* Si il y a effectivement eu au moins un double */
         var index_du_domino = Resultat.index_du_domino;
     }
-    
+    /* On cherche le domino en question pour le jouer */
     var le_domino = PLAYER_LIST[numero_du_joueur][index_du_domino];
     le_domino.state = "Entourable";
-    // À TRAITER : Dessiner le domino de départ et l'enlever au joueur
-    socket.emit('Placement_du_premier_domino', )
+
+    /* Étape pour dire que c'est bien ce joueur qui a commencé à jouer */
+    return {numero_joueur: numero_du_joueur, domino: le_domino};
 }
 
 var LesDominosDuDeckJouables = function(data){
@@ -162,7 +171,6 @@ var AnalyserLesOptions = function(deck){
     for (var i = 0; i < ChiffresJouables.length; i++){
         LesDominosDuDeckJouables({possibility: ChiffresJouables[i], deck: deck})
     }
-    socket.emit('dessinerEnRouge', deck);
 }
 
 /* Création des dominos */
@@ -175,18 +183,17 @@ for (var i = 0; i <= 6; i++){
 }
 
 var CopyList = function(List){
-    allDominosToBeUsed = [];
+    var allDominos = [];
     for (var i = 0; i < List.length; i++){
-        allDominosToBeUsed.push(List[i]);
+        allDominos.push(List[i]);
     }
-    return(allDominosToBeUsed);
+    return(allDominos);
 }
 
 /* Méthode qui choisit des dominos au hasard au début pour
  créer le deck du joueur */
 var chooseDominosForDeck = function(){
     var Dominos = [];
-    var indexes_used = [];
     for (var i = 0; i < 7; i++){
         var index = Math.floor(Math.random()*allDominosToBeUsed.length);
         while (indexes_used.includes(index)){
@@ -237,9 +244,8 @@ io.sockets.on('connection', function(socket){
     signIn = false;
 
     if (PLAYER_LIST.length == 0){
-        var allDominosToBeUsed = CopyList(allDominos);
+        allDominosToBeUsed = CopyList(allDominos);
     }
-
     /* Réception côté serveur de la connexion du client */
     socket.on('signIn', function(data){
         if (!(PLAYER_LIST.length == 2)){
@@ -251,17 +257,18 @@ io.sockets.on('connection', function(socket){
                     var deck = chooseDominosForDeck();
                     player.deck = deck;
                     PLAYER_LIST.push(deck);
+                    DECK_LIST.push(player);
+                    console.log(DECK_LIST);
                     signIn = true;
 
                     /* On associe un id unique à chaque joueur */
-                    socket.id = Math.random();
-        
+                    socket.id = Math.random(); 
                     /* On ajoute à la liste des joueurs l'objet socket qui
                     représente un joueur avec des attributs (ici id) */
-                    SOCKET_LIST.push(socket.id);
-                    
+                    SOCKET_LIST.push(socket);
                     socket.emit('signInResponse', {success:true});
                     socket.emit('drawDeck', deck);
+                    socket.emit('Afficher_Joueur', {player_name: player_name});
                 } else {
                     socket.emit('signInResponse', {connected: true});
                 }
@@ -286,9 +293,12 @@ io.sockets.on('connection', function(socket){
 
     /* On créé des Decks seulement sur moins de 2 joueurs sont connectés */
     if (PLAYER_LIST.length == 2 && signIn == true){
-
-        socket.emit('PlacerPremierDomino',   );
-
+        var data = QuiCommence(PLAYER_LIST);
+        /* data = {
+            numero_joueur:...
+            le_domino:...
+        }*/
+        socket.emit('PlacerPremierDomino', data);
     }
 
     /* On écoute à un émit coté client :*/
@@ -308,16 +318,20 @@ io.sockets.on('connection', function(socket){
 
     socket.on('QuelDomino', function(data){
         /* data est le numero du domino du deck du joueur */
-
         /* Savoir quel joueur a cliqué */
-        var numero_joueur = SOCKET_LIST.indexOf(socket.id);
+        var numero_joueur = SOCKET_LIST.indexOf(socket);
         var le_domino = PLAYER_LIST[numero_joueur][data.numero];
         le_domino.state = "Entourable";
 
         /* Remettre les Dominos Jouables en Injouable */
-        DOMINOS_JOUES[-1].state = "Posé";
+        if (DOMINOS_JOUES.length != 0){
+            DOMINOS_JOUES[DOMINOS_JOUES.length - 1].state = "Pose";
+        }
         DOMINOS_JOUES.push(le_domino);
         /* Il faut maintenant le dessiner */
-        socket.emit('LeDominoChoisi', {domino: deck[data.numero]})
+        socket.emit('LeDominoChoisi', {x: data.x});
+        socket.emit('AQuiDeJouer', {jouer: false});
+        /* Lancer l'analyse pour le prochain joueur. Et changer le joueur aussi */
+        AnalyserLesOptions()
     });
 });
