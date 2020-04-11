@@ -116,17 +116,28 @@ var RecherchePlusGrandDouble = function(data){
     var max_2 = Math.max(...d2);
     //console.log(max_1, max_2)
 
+<<<<<<< HEAD
     if (Math.max((max_1, max_2)) == max_1){
+=======
+    if (Math.max([max_1, max_2]) == max_1){
+>>>>>>> 2dab4bba94403791c82a643a4b9c34f85c4a2df4
         var index = 0;
         for (var i = 0; i < deck1.length; i++){
             if (deck1[i].numbre_1 == max_1){
                 index = i;
             }
         }
+<<<<<<< HEAD
         return {numero_joueur: 0, index_du_domino: index, success: true};
     } else if (Math.max((max_1, max_2)) == max_2){
         for (var i = 0; i < deck2.length; i++){
             if (deck2[i].numbre_1 == max_2){
+=======
+        return {numero_joueur: 1, index_du_domino: index, success: true};
+    } else if (Math.max([max_1, max_2]) == max_2){
+        for (var i = 0; i < d2.length; i++){
+            if (doubles_player2[i] == max_2){
+>>>>>>> 2dab4bba94403791c82a643a4b9c34f85c4a2df4
                 index = i;
             }
         }
@@ -150,7 +161,10 @@ var QuiCommence = function(data){
 
     if (!(Resultat.success)){
         ///////////// À TRAITER, PAS DE DOUBLE
+<<<<<<< HEAD
         console.log("Pas de double");
+=======
+>>>>>>> 2dab4bba94403791c82a643a4b9c34f85c4a2df4
     } else {
         /* Si il y a effectivement eu au moins un double */
         var index_du_domino = Resultat.index_du_domino;
@@ -160,7 +174,12 @@ var QuiCommence = function(data){
     le_domino.state = "Entourable";
 
     /* Étape pour dire que c'est bien ce joueur qui a commencé à jouer */
+<<<<<<< HEAD
     PLAYER_LIST[numero_du_joueur].compteur += 1;
+=======
+
+    console.log({numero_joueur: numero_du_joueur, domino: le_domino});
+>>>>>>> 2dab4bba94403791c82a643a4b9c34f85c4a2df4
     return {numero_joueur: numero_du_joueur, domino: le_domino};
 }
 
@@ -303,6 +322,7 @@ io.sockets.on('connection', function(socket){
         }
     });
 
+<<<<<<< HEAD
     socket.on('Commencer', function(){
         if (PLAYER_LIST.length == 2){
             /* data = {
@@ -315,6 +335,16 @@ io.sockets.on('connection', function(socket){
         }
     });
     
+=======
+    /* On créé des Decks seulement sur moins de 2 joueurs sont connectés */
+    if (PLAYER_LIST.length == 2){
+        /* data = {
+            numero_joueur:...
+            le_domino:...
+        }*/
+        socket.emit('PlacerPremierDomino', QuiCommence([PLAYER_LIST[0].deck, PLAYER_LIST[1].deck]));
+    }
+>>>>>>> 2dab4bba94403791c82a643a4b9c34f85c4a2df4
 
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */
