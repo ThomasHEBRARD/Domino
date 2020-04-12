@@ -144,7 +144,6 @@ var RecherchePlusGrandDouble = function(data){
     }
 }
 
-
 /* Choisir quel joueur commence : C'est le joueur avec le plus grand double qui doit commencer.
 data est un dictionnaire des deck des 2 joueurs */
 var QuiCommence = function(data){
@@ -393,6 +392,8 @@ io.sockets.on('connection', function(socket){
     socket.on('QuelDomino', function(data){
         /* data est le numero du domino du deck du joueur */
         /* Savoir quel joueur a cliqué */
+        console.log(data.y);
+        console.log('click');
         var numero_joueur = SOCKET_LIST.indexOf(socket);
         var le_domino = PLAYER_LIST[numero_joueur].deck[data.numero];
         le_domino.state = "Entourable";

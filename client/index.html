@@ -238,9 +238,9 @@
     après avoir CLIQUÉ dessus, donc elle renvoie 0, 1, 2, 3, 4, 5 ou 6 */
     var ChoixDomino = function(data){
         data.x += 10;
-        if (10 <= data.y <= 100){
+        if (10 <= data.y && data.y <= 100){
             var numero = Math.floor(data.x/65);
-            socket.emit('QuelDomino', {numero: numero, x: Math.floor(data.x/65)});
+            socket.emit('QuelDomino', {y: data.y, numero: numero, x: Math.floor(data.x/65)});
         }
     }
     /* Dessine un Domino */
