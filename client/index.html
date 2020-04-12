@@ -132,9 +132,9 @@
         /* Si on a pas un preventDefault, en appuyant sur entrée, cela va
         refresh la page. */
         e.preventDefault();
-        /* On envoit au server le message que l'on veut envoyer sous vorme d'une variable */
+        /* On envoi au server le message que l'on veut envoyer sous vorme d'une variable */
         socket.emit('sendMsgToServer', chatInput.value);
-        /* On resert la variable */
+        /* On reset la variable */
         chatInput.value = '';
     };
 
