@@ -164,6 +164,16 @@ var QuiCommence = function(data){
     return {numero_joueur: numero_du_joueur, domino: le_domino};
 }
 
+var NumeroDominoDuJoueur = function(index){
+    for (var j = 0; j < PLAYER_LIST.length; j++){
+        for (var i = 0; i < PLAYER_LIST[j].deck.length; i++){
+            if (PLAYER_LIST[j].deck[i].id == index){
+                return({numero_joueur: j, numero_du_domino: i})
+            }
+        }
+    }
+}
+
 var LesDominosDuDeckJouables = function(data){
     var DECK = data.deck;
     for (var i = 0; i < DECK.length; i++){
@@ -307,14 +317,18 @@ io.sockets.on('connection', function(socket){
         if (PLAYER_LIST.length == 2){
             /* data = {
                 numero_joueur:...
-                le_domino:...
+                domino:...
             }*/
             var data = QuiCommence({deck1: PLAYER_LIST[0].deck, deck2 :PLAYER_LIST[1].deck});
-            console.log(data);
             socket.broadcast.emit('PlacerPremierDomino', data);
         }
     });
     
+    socket.on('Effacer_le_domino_utilise', function(data){
+        var num_domino = NumeroDominoDuJoueur(data.numero_du_domino);
+        console.log(num_domino);
+        socket.emit('Barrage_domino_debut', num_domino)
+    });
 
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */

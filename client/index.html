@@ -178,11 +178,15 @@
             pinceau.strokeRect(495, 270, 45, 45, "green");
             pinceau.fillText(numbre.toString(), 495 + 15, 270 + 30);
             pinceau.stroke();
-            used_domino({numero_joueur: data.numero_joueur, numero_domino: data.numero_domino});
+            socket.emit('Effacer_le_domino_utilise', {numero_du_domino: data.numero_domino});
+            //used_domino({numero_du_domino: data.numero_domino});
         } else {
-
         }
     };
+
+    socket.on('Barrage_domino_debut', function(data){
+        used_domino({numero_domino: data.numero_du_domino});
+    });
 
     var used_domino = function(data){
         deck_context.beginPath();
@@ -190,7 +194,7 @@
         deck_context.lineTo(data.numero_domino*65 + 55, 100);
         deck_context.stroke();
         //AQuiDeJouer({jouer: false});
-    }
+    };
 
     var ChoixDomino = function(data){
         data.x += 10;
