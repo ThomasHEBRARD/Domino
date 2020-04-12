@@ -51,26 +51,20 @@ class Player {
         this.compteur = 0;
     };
 
-    /* Méthode qui est lancée quand un joueur se connecte */
-    onConnect(socket) {
-        PLAYER_LIST[name] = name;
-        var player = new Player(socket.id);
-    };
-
     /* Méthode lancée quand un joueur se déconnecte */
     onDisconnect(socket) {
         /* On l'enlève de la liste des joueurs */
-        delete SOCKET_LIST[socket.id];
-        delete PLAYER_LIST[this.name];
+        delete SOCKET_LIST[socket];
+        delete PLAYER_LIST[player];
     };
 }
 
+/* Classe qui gère les Dominos */
 class Domino {
     constructor(id, numbre_1, numbre_2) {
         this.id = id;
         this.numbre_1 = numbre_1;
         this.numbre_2 = numbre_2;
-        this.numbre_used = numbre_1;
         /* Plusieurs états pour savoir quel domino peut-être joué 
         -> Jouable : C'est à dire qu'il fait parti des Dominos qui peuvent être possiblement 
         posés au moment où c'est au joueur de jouer.
@@ -98,39 +92,48 @@ var RecherchePlusGrandDouble = function(data){
     var d1 = [];
     var d2 = [];
 
+    /* On cherche tous les doubles dans le premier deck */
     for (var i = 0; i < deck1.length; i++){
         if (deck1[i].numbre_1 == deck1[i].numbre_2){
             doubles_player1.push({chiffre_du_domino: deck1[i].numbre_1, index_du_domino: i});
+            /* Cette liste contiendra tous les chiffres des dominos jumeaux */
             d1.push(doubles_player1[doubles_player1.length - 1].chiffre_du_domino);
         }
     }
+    /* On cherche tous les doubles dans le 2eme deck */
     for (var i = 0; i < deck2.length; i++){
         if (deck2[i].numbre_1 == deck2[i].numbre_2){
             doubles_player2.push({chiffre_du_domino: deck2[i].numbre_1, index_du_domino: i});
+            /* Cette liste contiendra tous les chiffres des dominos jumeaux */
             d2.push(doubles_player2[doubles_player2.length - 1].chiffre_du_domino);
         }
     }
-    //console.log(doubles_player1, doubles_player2);
-    //console.log(d1,d2);
+
+    /* On cherche pour chaque deck le chiffre le plus haut */
     var max_1 = Math.max(...d1);
     var max_2 = Math.max(...d2);
-    //console.log(max_1, max_2)
 
+    /* Enfin, il faut savoir a qui appartient ce double */
+    /* Si ce double appartient au premier deck */
     if (Math.max((max_1, max_2)) == max_1){
         var index = 0;
+        /* Enfin on cherche l'indice de ce domino dans le deck */
         for (var i = 0; i < deck1.length; i++){
             if (deck1[i].numbre_1 == max_1){
                 index = i;
             }
         }
         return {numero_joueur: 0, index_du_domino: index, success: true};
+        /* Si ce double appartient au premier deck */
     } else if (Math.max((max_1, max_2)) == max_2){
+        /* Enfin on cherche l'indice de ce domino dans le deck */
         for (var i = 0; i < deck2.length; i++){
             if (deck2[i].numbre_1 == max_2){
                 index = i;
             }
         }
         return {numero_joueur: 1, index_du_domino: index, success: true};
+        /* Si il n'y a pas de doubles */
     } else {
         /* Si y'a aucun double, on choisi au pif */
         if (Math.random() >= 0.5){
@@ -142,10 +145,12 @@ var RecherchePlusGrandDouble = function(data){
 }
 
 
-/* Choisir quel joueur commence : data est un dictionnaire des decsk des 2 joueurs */
+/* Choisir quel joueur commence : C'est le joueur avec le plus grand double qui doit commencer.
+data est un dictionnaire des deck des 2 joueurs */
 var QuiCommence = function(data){
     /* data = [deck1, deck2]*/
     Resultat = RecherchePlusGrandDouble(data);
+    /* Numéro du joueur, 0 ou 1, pour le choisir dans la lsite PLAYER_LIST */
     var numero_du_joueur = Resultat.numero_joueur;
 
     if (!(Resultat.success)){
@@ -164,6 +169,8 @@ var QuiCommence = function(data){
     return {numero_joueur: numero_du_joueur, domino: le_domino};
 }
 
+/* Cette méthode renvoi, pour un numéro de domino jumeau, à qui appartient ce domino,
+    et à quel joueur */
 var NumeroDominoDuJoueur = function(index){
     for (var j = 0; j < PLAYER_LIST.length; j++){
         for (var i = 0; i < PLAYER_LIST[j].deck.length; i++){
@@ -174,6 +181,8 @@ var NumeroDominoDuJoueur = function(index){
     }
 }
 
+/* Cette méthode analyse quels sont les dominos du deck encore jouables, 
+pour savoir quels dominos peuvent être joués au tour prochain */
 var LesDominosDuDeckJouables = function(data){
     var DECK = data.deck;
     for (var i = 0; i < DECK.length; i++){
@@ -183,13 +192,14 @@ var LesDominosDuDeckJouables = function(data){
     }
 }
 
+/* Méthode TEMPORAIRE */
 var AnalyserLesOptions = function(deck){
     for (var i = 0; i < ChiffresJouables.length; i++){
         LesDominosDuDeckJouables({possibility: ChiffresJouables[i], deck: deck})
     }
 }
 
-/* Création des dominos */
+/* On créé les 28 dominos du jeu */
 k = 0;
 for (var i = 0; i <= 6; i++){
     for (var j = i; j <= 6; j++){
@@ -198,6 +208,7 @@ for (var i = 0; i <= 6; i++){
     }
 }
 
+/* Méthode pour copier la liste globale des dominos, pour ne pas qu'elle soit modifiée */
 var CopyList = function(List){
     var allDominos = [];
     for (var i = 0; i < List.length; i++){
@@ -215,6 +226,7 @@ var chooseDominosForDeck = function(){
         while (indexes_used.includes(index)){
             index = Math.floor(Math.random()*allDominosToBeUsed.length);
         }
+        /* En faisant attention de supprimer les index et les dominos déjà utilisés */
         indexes_used.push(index);
         Dominos.push(allDominosToBeUsed[index]);
         delete allDominosToBeUsed[index];
@@ -240,6 +252,7 @@ var addPlayer = function(data){
     PLAYERS[data.username] = data.password;
 }
 
+/* Méthode qui vérifie que le joueur qui vient de se connecter n'était pas déjà connecté */
 var NotAlreadyConnected = function(data){
     var boolean = true;
     for (var i = 0; i < PLAYER_LIST.length; i++){
@@ -256,23 +269,30 @@ var NotAlreadyConnected = function(data){
 
 /* Dès qu'il y a une connection, la function ci-dessous est appelée */
 var io = require('socket.io')(serv, {});
-
+/* La function ci-dessous sera lancée dès que la page du site sera refresh */
 io.sockets.on('connection', function(socket){
     var player_name = 'None';
     signIn = false;
 
+    /* Si aucun joueur ne s'est connecté, c'est que c'est le début, donc on 
+    copy la liste de tous les dominos */
     if (PLAYER_LIST.length == 0){
         allDominosToBeUsed = CopyList(allDominos);
     }
-    /* Réception côté serveur de la connexion du client */
+
+    /* Réception côté serveur de la connexion du client, on écoute */
     socket.on('signIn', function(data){
         /* data = {
             username: username,
             password: password
         }*/
+        /* On limite dans une première étude le jeu ) 2 joueurs */
         if (!(PLAYER_LIST.length == 2)){
+            /* On vérifie que le password rentré est bon, grace à la base de donnée d'utilisateurs qui ont signUp */
             if (isValidPassword(data)){
+                /* On vérifie qu'il n'est pas connecté */
                 if (NotAlreadyConnected(data)){
+                    /* Dans ce cas, on peut créer son profil */
                     var player = new Player(socket, data.username);
                     PLAYER_LIST.push(player);
                     /* Création du deck du joueur */
@@ -293,18 +313,22 @@ io.sockets.on('connection', function(socket){
 
                     /* PS : Ces trois emit peuvent être rassemblés en 1 seul */
                 } else {
-                    console.log('déja connecté');
+                    /* Joueur déjà connecté */
                     socket.emit('signInResponse', {success: 1});
                 }
             } else {
+                /* Mot de passe incorrect */
                 socket.emit('signInResponse', {success: 2});
             }
         } else {
+            /* Il y a trop de joueurs connectés */
             socket.emit('TropDeJoueurs');
         }
     });
 
+    /* Ici, on écoute le client lorsqu'il se créé un compte */
     socket.on('signUp', function(data){
+        /* Si on username est unique, on le rajoutera à la bdd */
         if (isUsernameTaken(data)){
             socket.emit('signUpResponse', {success:false});
         } else {
@@ -313,20 +337,25 @@ io.sockets.on('connection', function(socket){
         }
     });
 
+    /* Ici on écoute le lancé du jeu, lancé par un bouton côté client */
     socket.on('Commencer', function(){
         if (PLAYER_LIST.length == 2){
             /* data = {
                 numero_joueur:...
                 domino:...
             }*/
+            /* On cherche qui doit commencer */
             var data = QuiCommence({deck1: PLAYER_LIST[0].deck, deck2 :PLAYER_LIST[1].deck});
+            /* On communique au client pour qu'il puisse mettre à jour et dessiner */
             socket.broadcast.emit('PlacerPremierDomino', data);
         }
     });
+
+    /* Cette méthode est utile pour effacer le domino utiliser. On repasse par le serveur pour
+    connaître la socket qui doit être modifiée */
     
     socket.on('Effacer_le_domino_utilise', function(data){
         var num_domino = NumeroDominoDuJoueur(data.numero_du_domino);
-        console.log(num_domino);
         socket.emit('Barrage_domino_debut', num_domino)
     });
 
@@ -339,6 +368,8 @@ io.sockets.on('connection', function(socket){
     });
     
     /* Messagerie instantanée */
+    /* On rajoute pour les jours socket le nouveau texte qui vient d'être rentré
+    par une seule socket. On aurait pu utiliser socket.broadcast.emit() */
     socket.on('sendMsgToServer', function(data){
         var index = SOCKET_LIST.indexOf(socket);
         for (var i in SOCKET_LIST) {
@@ -346,6 +377,8 @@ io.sockets.on('connection', function(socket){
         }
     });
 
+    /* On écoute le client qui demande quels sont les dominos qui peuvent être joués 
+    Voir rapport pour plus de détails */
     socket.on('QuelDomino', function(data){
         /* data est le numero du domino du deck du joueur */
         /* Savoir quel joueur a cliqué */
