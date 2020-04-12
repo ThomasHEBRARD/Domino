@@ -1,36 +1,46 @@
 <!-- MADE BY THOMAS HEBRARD
     AND    EDOUARD LAJOUANIE
 -->
+
+<!-- Tout d'abord, il faut structuer le html pour positionner les différents éléments -->
 <html>
     <head>
         <meta charset="utf-8">
         <title>Domino</title>
+        <!-- On y attache un feuille de style .css -->
         <link rel="stylesheet" type="text/css" href="indexcss.css">
     </head>
     <body>
+        <!-- Première div qui sera apparente à l'état initial, pour que le joueur se connecte
+        On pourra l'identifier avec le "id"-->
         <div id="sign">
             Username: <input id="sign-username" type="text"></input><br>
             Password: <input id="sign-password" type="password"></input>
             <button id="sign-signIn">Sign In</button>
             <button id="sign-signUp">Sign Up</button>
         </div>
-        
+        <!--- 2eme div qui sera par défaut invisible. Elle n'apparaitra que lors qu'un joueur se connectera -->
         <div id="game" style="display:none;">
+            <!-- div ou sera dessiné le deck du joueur, gra^ce à des canvas -->
             <div>
+                <!-- canvas pour dessiner le deck du joueur en question -->
                 <canvas id = "deck_canvas" width="500" height="200"
                 style="border:1px solid blue"></canvas>
 
+                <!-- Canvas pour afficher des informations -->
                 <canvas id = "info" width="500" height="200" 
                 style="border:1px solid red;">
                     <div id = "Les_Infos">
                     </div>
                 </canvas>
+                <!-- Ce bouton sera affiché avant le début de la partie, et ne peut être actionné que lorsque 2 joueurs
+                sont connectés -->
                 <button id="button_commencer" style="display:inline-block;" onclick="commencer()">Commencer</button>
 
             </div>
             <canvas id = "ctx" width="1035" height="495" 
                 style="border:1px solid #000000;"></canvas>
-        
+        <!-- 3eme div pour afficher le chat instantané -->
         <div id="chat-text" style="width:1000px;height:500px;overflow-y:scroll">
             <div>
                 <h1>
@@ -38,7 +48,7 @@
                 </h1>
             </div>
         </div>
-    
+        <!-- Le forumulaire pour faire intéragir les joueurs avec le chat-->
         <form id="chat-form">
             <label for="chat-input">Entrez votre message ici:</label>
             <input id="chat-input" type="text" style="width:500px"></input>
@@ -47,8 +57,10 @@
     </body>
 </html>
 
+<!-- Import des librairies socket-->
 <script src="/socket.io/socket.io.js"></script>
 
+<!-- Quand la page sera rafraichit, ce script sera exécuté -->
 <script>
     /* On initialise la connection entre le client et le serveur */
     var socket = io();
@@ -57,27 +69,36 @@
 
     /******************** Sign ********************/
 
+    /* Partie qui gère l'inscription et la connection */
+    /* On récupère les boutons et les input */
     var sign = document.getElementById('sign');
     var sign_username = document.getElementById('sign-username');
     var sign_password = document.getElementById('sign-password');
     var sign_signIn = document.getElementById('sign-signIn');
     var sign_signUp = document.getElementById('sign-signUp');
 
+    /* Fonction qui est lancé quand on clic sur le bouton "singIn" */
     sign_signIn.onclick = function(){
+        /* On envoit au serveur les informations du joueurs qui ont été rentrées */
         socket.emit('signIn', {username:sign_username.value, password:sign_password.value});
     }
-
+    /* Fonction qui est lancé quand on clic sur le bouton "singUp" */
     sign_signUp.onclick = function(){
+        /* On envoit au serveur les informations du joueurs qui ont été rentrées */
         socket.emit('signUp', {username:sign_username.value, password:sign_password.value})
     }
 
+    /* On écoute ce que le serveur nous : Ici c'est qu'il y a trop de joueurs donc il faut l'afficher */
     socket.on('TropDeJoueurs', function(){
         alert('Trop de joueurs sont connectés (limité à 2 joueurs)');
     });
 
+    /* On écoute la réponse du serveur quand à la connexion, pour afficher ou pas le jeu */
     socket.on('signInResponse', function(data){
         if(data.success == 0){
+            /* On rend invisible la div de l'inscription */
             sign.style.display = 'none';
+            /* On affiche le jeu */
             game.style.display = 'inline-block';
         } else if (data.success == 2){
             alert('Mot de passe ou username incorrect');
@@ -86,10 +107,13 @@
         }
     });
 
+    /* On écoute la réponse du serveur quand à une inscripton du joueur */
     socket.on('signUpResponse', function(data){
         if (data.success){
+            /* Si il est unique */
             alert('Enregistrement correct');
         } else {
+            /* Si il existe déjà */
             alert('Enregistrement incorrect');
         }
     });
@@ -116,28 +140,30 @@
 
     /**************************** Le Jeu ************************/
 
+    /* Lorsqu'un joueur va cliquer sur le bouton commencer, cette fonction sera appelée */
     var commencer = function(){
         socket.emit('Commencer');
     };
+
     /* Pour dessiner le terrain de jeu*/
     var c1 = document.getElementById("ctx");
     var pinceau = c1.getContext("2d");
     pinceau.font = '30px Arial';
 
-    /* Tracé de la grille */
+    /***** Tracé de la grille ****/
     var ecart = 45; 
 
     /* Lignes */
     for(var h = ecart ; h < c1.height ; h += ecart) {
-        pinceau.moveTo(0, h); //déplacer le pinceau à (x,y) sans tracer
-        pinceau.lineTo(c1.width, h); //tracer jusqu'à (x,y)
+        pinceau.moveTo(0, h);
+        pinceau.lineTo(c1.width, h);
     }
     /* Colonnes */
     for(var w = ecart ; w < c1.width ; w += ecart) {
         pinceau.moveTo(w, 0);
         pinceau.lineTo(w, c1.height);
     }
-    /* Tracé */
+    /* MAJ du tracé */
     pinceau.stroke();
 
     /* Pour dessiner le deck de chaque joueur */
@@ -145,6 +171,8 @@
     var deck_context = deck.getContext("2d");
     deck_context.font = "30px Arial";
 
+    /* On a rajouté un Mouse Listener, quand le joueur clic dans sa zone de deck,
+    pour savoir sur quel domino il a cliqué, donc quel domino il a joué */
     deck.addEventListener('mousedown', function(event){
         cx = event.pageX - 10;
         cy = event.pageY - 10;
@@ -153,6 +181,8 @@
     
     /********* Dessin des dominos ************/
 
+    /* On écoute le serveur qui nous dit quel est le domino de départ, qui a été trouvé, 
+    et il faut maintenant le dessiner */
     socket.on('PlacerPremierDomino', function(data){
         /* data = {
             numero_joueur:...
@@ -166,6 +196,7 @@
             numero_joueur: data.numero_joueur, 
             numero_domino: dominoo.id
         };
+        /* On appelle cette fonction pour plus de clareté */
         drawDominoGame(DATA);
     });
 
@@ -178,16 +209,18 @@
             pinceau.strokeRect(495, 270, 45, 45, "green");
             pinceau.fillText(numbre.toString(), 495 + 15, 270 + 30);
             pinceau.stroke();
+            /* On efface le domino utilisé dans le deck du joueur concerné en envoyant l'information au serveur */
             socket.emit('Effacer_le_domino_utilise', {numero_du_domino: data.numero_domino});
             //used_domino({numero_du_domino: data.numero_domino});
         } else {
         }
     };
-
+    /* On écoute la réponse du serveur à l'effaçage du domino */
     socket.on('Barrage_domino_debut', function(data){
         used_domino({numero_domino: data.numero_du_domino});
     });
 
+    /* Cette méthode justement efface le domino, à partir de ce moment là on peut lancer la suite du jeu */
     var used_domino = function(data){
         deck_context.beginPath();
         deck_context.moveTo(10 + data.numero_domino*65, 10);
@@ -195,7 +228,8 @@
         deck_context.stroke();
         //AQuiDeJouer({jouer: false});
     };
-
+    /* Cette méthode renvoit le chiffre du domino choisi par le joueur 
+    après avoir CLIQUÉ dessus, donc elle renvoie 0, 1, 2, 3, 4, 5 ou 6 */
     var ChoixDomino = function(data){
         data.x += 10;
         if (10 <= data.y <= 100){
@@ -239,6 +273,8 @@
         }
     });
 
+    /* On écoute le serveur qui nous communique le domino choisi. 
+    Il faut le dessiner sur le terrain de jeu et le supprimer du deck du joueur */
     socket.on('LeDominoChoisi', function(data){
         used_domino(data);
         if (compteur == 0){
@@ -251,16 +287,20 @@
     
 
     /************ Les infos ****************/
-    
+    /* Cette partie gère les informations affichées dans le carré rouge */
     var info = document.getElementById("info").getContext('2d');
     info.font = "30px Arial";
     var Les_Infos = document.getElementById("Les_Infos");
 
+    /* On écoute le serveur qui nous dit quel nom afficher, pour savoir,
+    une fois connecté, sous quel nom on est connecté. */
     socket.on('Afficher_Joueur', function(data){
         var name = data.player_name;
         info.fillText(" Vous êtes: " + name.toString(), 15, 30);
     });
 
+    /* Non utilisée, elle doit être affichée dans le carré rouge pour
+    indiquer au joueur si c'est à lui de jouer ou pas */
     var AQuiDeJouer = function(data){
         if (data.jouer){
             Les_Infos.innerHTML = '<div>' + "À toi de jouer" + '</div>';
@@ -269,6 +309,7 @@
         }
     };
 
+    /* On affiche justement la méthode précédente. */
     socket.on('AQuiDeJouer', function(data){
         AQuiDeJouer(data);
     });
