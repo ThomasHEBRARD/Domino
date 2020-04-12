@@ -252,6 +252,7 @@ var addPlayer = function(data){
     PLAYERS[data.username] = data.password;
 }
 
+
 /* Méthode qui vérifie que le joueur qui vient de se connecter n'était pas déjà connecté */
 var NotAlreadyConnected = function(data){
     var boolean = true;
@@ -356,8 +357,15 @@ io.sockets.on('connection', function(socket){
     
     socket.on('Effacer_le_domino_utilise', function(data){
         var num_domino = NumeroDominoDuJoueur(data.numero_du_domino);
-        socket.emit('Barrage_domino_debut', num_domino)
+        /* num_domino = {
+            numero_joueur: ..,
+            numero_du_domino: ..
+        }*/
+        console.log(num_domino);
+        SOCKET_LIST[num_domino.numero_joueur].emit('Barrage_domino_debut', num_domino.numero_du_domino)
     });
+
+    
 
     /* On écoute à un émit coté client :*/
     /* Si un joueur se déconnecte, la fonction ci dessous sera appelée */

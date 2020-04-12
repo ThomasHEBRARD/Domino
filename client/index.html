@@ -217,7 +217,7 @@
     };
     /* On écoute la réponse du serveur à l'effaçage du domino */
     socket.on('Barrage_domino_debut', function(data){
-        used_domino({numero_domino: data.numero_du_domino});
+        used_domino({numero_domino: data});
     });
 
     /* Cette méthode justement efface le domino, à partir de ce moment là on peut lancer la suite du jeu */
@@ -226,7 +226,8 @@
         deck_context.moveTo(10 + data.numero_domino*65, 10);
         deck_context.lineTo(data.numero_domino*65 + 55, 100);
         deck_context.stroke();
-        //AQuiDeJouer({jouer: false});
+        
+
     };
     /* Cette méthode renvoit le chiffre du domino choisi par le joueur 
     après avoir CLIQUÉ dessus, donc elle renvoie 0, 1, 2, 3, 4, 5 ou 6 */
