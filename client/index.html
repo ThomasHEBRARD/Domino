@@ -217,7 +217,7 @@
     };
     /* On écoute la réponse du serveur à l'effaçage du domino */
     socket.on('Barrage_domino_debut', function(data){
-        used_domino({numero_domino: data});
+        used_domino({numero_domino: data.numero_domino, joueur: data.player, indice_du_joueur: data.index_joueur});
     });
 
     /* Cette méthode justement efface le domino, à partir de ce moment là on peut lancer la suite du jeu */
@@ -226,7 +226,12 @@
         deck_context.moveTo(10 + data.numero_domino*65, 10);
         deck_context.lineTo(data.numero_domino*65 + 55, 100);
         deck_context.stroke();
-        
+        player.compteur += 1;
+        var joueur_suivant = 0;
+        if (data.indice_du_joueur == 1){
+            joueur_suivant = 1;
+        }
+        //AQuiDeJouer()
 
     };
     /* Cette méthode renvoit le chiffre du domino choisi par le joueur 
@@ -303,6 +308,9 @@
     /* Non utilisée, elle doit être affichée dans le carré rouge pour
     indiquer au joueur si c'est à lui de jouer ou pas */
     var AQuiDeJouer = function(data){
+        /* data = {
+            
+        }*/
         if (data.jouer){
             Les_Infos.innerHTML = '<div>' + "À toi de jouer" + '</div>';
         } else {
